@@ -1,7 +1,8 @@
 <div class="horizontal-padding vertical-padding" >
     <section class="profile" id="profile">
         <div class="profile-info">
-            <div *ngFor="let item of perfil">
+            <div> 
+                @for (item of perfil; track item) {
                 <h1 class="profile-title">
                     {{item.Titulo1}}
                 </h1>
@@ -14,7 +15,7 @@
                 <a class="profile-btn" href={{item.Archivo}} download>
                     {{item.Descarga}}
                 </a>
-    
+                }
             </div>
         </div>
         <span class="profile-img-section">

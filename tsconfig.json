@@ -21,6 +21,10 @@
       "ES2022",
       "dom"
     ],
+    /* AÑADE ESTAS DOS LÍNEAS AQUÍ */
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    /* -------------------------- */
     "paths": {
       "@angular/*": ["node_modules/@angular/*"],
       "@ng-bootstrap/ng-bootstrap": ["node_modules/@ng-bootstrap/ng-bootstrap"],

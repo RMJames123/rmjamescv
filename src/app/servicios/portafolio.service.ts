@@ -5,9 +5,20 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { LanguageService } from './language.service';
 
 @Injectable({
-  providedIn: 'root' // Esto hace que el servicio esté disponible en toda la app Standalone
+  providedIn: 'root'
 })
 export class PortafolioService {
+   private menuRef: any;
+   private perfilRef: any;
+   private skillRef: any;
+   private experienciaRef: any;
+   private educacionRef: any;
+   private capacitacionesRef: any;
+   private testimoniosRef: any;
+   private contactoRef: any;
+
+
+
 
   // Obtenemos el idioma actual del servicio de idiomas
   get Idioma(): string {
@@ -18,82 +29,88 @@ export class PortafolioService {
     private http: HttpClient,
     private dbPortfolio: AngularFireDatabase,
     private LangService: LanguageService
-  ) { }
+  ) { 
 
-  /**
-   * MÉTODO PARA ROL MAESTRO (GOD MODE)
-   * Aquí podrías implementar la lógica para ignorar filtros de idioma 
-   * si el usuario tiene acceso total.
-   */
-  private applyFilters(ref: any, filterPath: string = 'Idioma') {
-    // Si quisiéramos implementar el "Acceso Total", preguntaríamos aquí:
-    // if (this.userHasGodMode) return ref; 
-    return this.Idioma ? ref.orderByChild(filterPath).equalTo(this.Idioma) : ref;
+    this.menuRef = this.dbPortfolio.list('/Menu', ref => this.applyFilters(ref));
+    this.perfilRef = this.dbPortfolio.list('/Perfil', ref => this.applyFilters(ref));
+    this.skillRef = this.dbPortfolio.list('/Skill', ref => this.applyFilters(ref));
+    this.experienciaRef = this.dbPortfolio.list('/Experiencia', ref => this.applyFilters(ref));
+    this.educacionRef = this.dbPortfolio.list('/Educacion', ref => this.applyFilters(ref));
+    this.capacitacionesRef = this.dbPortfolio.list('/Capacitaciones', ref => this.applyFilters(ref));
+    this.testimoniosRef = this.dbPortfolio.list('/Testimonios', ref => this.applyFilters(ref));
+
   }
+
+  
+  private applyFilters(ref: any, filterPath: string = 'Idioma') {
+    return ref.orderByChild(filterPath).equalTo(this.Idioma);
+  }
+
+  // --- MÉTODOS DE CARGA ---
 
   CargarIdiomas(): Observable<any> {
     return this.http.get('https://rm-portafolio-default-rtdb.firebaseio.com/Idiomas.json');
   }
 
   CargarMenu(): Observable<any> {
-    return this.dbPortfolio.list('/Menu', ref => this.applyFilters(ref)).valueChanges();
+    return this.menuRef.valueChanges();
   }
 
   CargarPerfil(): Observable<any> {
-    return this.dbPortfolio.list('/Perfil', ref => this.applyFilters(ref)).valueChanges();
+    return this.perfilRef.valueChanges();
   }
 
   CargarSkill(): Observable<any> {
-    return this.dbPortfolio.list('/Skill', ref => this.applyFilters(ref)).valueChanges();
-  }
-
-  TituloSkill(): Observable<any> {
-    const strBtnLang = `#skills_${this.Idioma}`;
-    return this.dbPortfolio.list('/Menu', 
-      ref => ref.orderByChild('BtnLang').equalTo(strBtnLang)).valueChanges();
+    return this.skillRef.valueChanges();
   }
 
   CargarExperiencia(): Observable<any> {
-    return this.dbPortfolio.list('/Experiencia', ref => this.applyFilters(ref)).valueChanges();
-  }
-
-  TituloExperiencia(): Observable<any> {
-    const strBtnLang = `#experience_${this.Idioma}`;
-    return this.dbPortfolio.list('/Menu', 
-      ref => ref.orderByChild('BtnLang').equalTo(strBtnLang)).valueChanges();
+    return this.experienciaRef.valueChanges();
   }
 
   CargarEducacion(): Observable<any> {
-    return this.dbPortfolio.list('/Educacion', ref => this.applyFilters(ref)).valueChanges();
+    return this.educacionRef.valueChanges();
   }
 
   CargarCapacitaciones(): Observable<any> {
-    return this.dbPortfolio.list('/Capacitaciones', ref => this.applyFilters(ref)).valueChanges();
-  }
-
-  TituloCapacitaciones(): Observable<any> {
-    const strBtnLang = `#trainings_${this.Idioma}`;
-    return this.dbPortfolio.list('/Menu', 
-      ref => ref.orderByChild('BtnLang').equalTo(strBtnLang)).valueChanges();
+    return this.capacitacionesRef.valueChanges();
   }
 
   CargarTestimonios(): Observable<any> {
-    return this.dbPortfolio.list('/Testimonios', ref => this.applyFilters(ref)).valueChanges();
-  }
-
-  TituloTestimonios(): Observable<any> {
-    const strBtnLang = `#testimonials_${this.Idioma}`;
-    return this.dbPortfolio.list('/Menu', 
-      ref => ref.orderByChild('BtnLang').equalTo(strBtnLang)).valueChanges();
+    return this.testimoniosRef.valueChanges();
   }
 
   CargarContacto(): Observable<any> {
-    return this.dbPortfolio.list('/Contacto', ref => this.applyFilters(ref)).valueChanges();
+    return this.contactoRef.valueChanges();
   }
 
-  TituloContacto(): Observable<any> {
-    const strBtnLang = `#contact_${this.Idioma}`;
+  // --- MÉTODOS DE TÍTULOS (MENÚ DINÁMICO) ---
+
+  private getMenuByBtnLang(btnLangKey: string): Observable<any> {
+    const strBtnLang = `#${btnLangKey}_${this.Idioma}`;
     return this.dbPortfolio.list('/Menu', 
       ref => ref.orderByChild('BtnLang').equalTo(strBtnLang)).valueChanges();
   }
+
+  TituloSkill(): Observable<any> {
+    return this.getMenuByBtnLang('skills');
+  }
+
+  TituloExperiencia(): Observable<any> {
+    return this.getMenuByBtnLang('experience');
+  }
+
+  TituloCapacitaciones(): Observable<any> {
+    return this.getMenuByBtnLang('trainings');
+  }
+
+  TituloTestimonios(): Observable<any> {
+    return this.getMenuByBtnLang('testimonials');
+  }
+
+  TituloContacto(): Observable<any> {
+    return this.getMenuByBtnLang('contact');
+  }
+
+
 }

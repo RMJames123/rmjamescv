@@ -12,7 +12,14 @@ import { TestimoniosComponent } from './testimonios/testimonios.component';
   selector: 'app-root',
   standalone: true,
   imports: [
-    CommonModule, // Añade esto primero
+   CommonModule,
+   PerfilComponent,
+   ExperienciaComponent,
+   SkillComponent,
+   
+
+   /*
+    CommonModule, 
     NavbarComponent,
     PerfilComponent,
     ExperienciaComponent,
@@ -20,10 +27,19 @@ import { TestimoniosComponent } from './testimonios/testimonios.component';
     CapacitacionesComponent,
     ContactoComponent,
     TestimoniosComponent
+
+  */
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   title = 'Mi primera página Web';
+
+constructor() {
+   
+    // Si esto no sale, es que el navegador está leyendo una versión vieja cacheada
+    alert("Si lees esto, Angular está vivo"); 
+  }
+
 }

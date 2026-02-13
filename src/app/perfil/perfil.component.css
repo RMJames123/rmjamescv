@@ -1,109 +1,104 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&display=swap');
 
-.profile-info {
-    margin-bottom: 25px;
-}
-
-.profile-img {
-    width: 50%;
-    max-width: 500px;
-}
-
-.profile-img-section {
-    position: relative;
-}
-
-.profile-img-line {
-    background-color: var(--secondary-color);
-    height: 15px;
-    width: 100%;
-    position: absolute;
-    left: 0;
-    margin-bottom: 0;
-}
-
+/* --- ESTRUCTURA GENERAL --- */
 .profile {
+    display: flex;
+    flex-direction: column; /* Móvil: uno arriba de otro */
+    align-items: center;
     text-align: center;
-    padding-top: 80px;
+    padding-top: 50px;
+    gap: 40px;
+}
+
+/* --- INFO DEL PERFIL --- */
+.profile-info {
+    flex: 1;
 }
 
 .profile-title {
-    font-style: 35px;
+    font-size: 35px; /* Corregido de font-style */
     font-weight: bold;
-    margin: 0;
     color: var(--primary-color);
     font-family: 'Noto Sans', sans-serif;
+    margin: 0;
 }
 
 .profile-details {
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 1.3;
-    max-width: 450px;
-    margin: 20px auto;
+    font-size: var(--fs, 16px);
+    font-weight: var(--fw, 400);
+    line-height: var(--lh, 1.5);
+    max-width: var(--mw, 100%);
+    margin: var(--mg, 20px 0);
     color: var(--experience-color);
 }
 
 .profile-btn {
     background-color: var(--primary-color);
     color: var(--text-color-inverse);
-    border: none;
     font-size: 20px;
-    padding: 0.5em 1em;
+    padding: 0.5em 1.5em;
     border-radius: 7px;
-    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.3s;
 }
 
-.profile-btn:hover {
-    filter: brightness(130%);
+/* --- SECCIÓN DE LA FOTO --- */
+.profile-img-section {
+    position: relative;
+    display: flex;
+    flex-direction: column; /* Apila foto arriba y línea abajo */
+    align-items: center;    /* Centra la foto sobre la línea */
 }
 
-@media(min-width:950px){
+.profile-img {
+    display: block;
+    width: 100%;
+    max-width: 450px; 
+    height: auto;
+    z-index: 1; /* La foto está en su propia capa */
+    /* IMPORTANTE: El margen inferior debe ser 0 para apoyarse en la línea */
+    margin-bottom: 0; 
+    transform: scaleX(-1);
+}
 
-    .profile-info {
-        margin-bottom: 25px;
-    }
-    
-    .profile-img {
-        width: 100%;
-        max-width: 450px;
-        transform: scaleX(-1);
-    }
-    
-    .profile-img-section {
-        position: relative;
-    }
-    
-    .profile-img-line {
-        background-color: var(--secondary-color);
-        height: 15px;
-        width: 100%;
-        position: absolute;
-        left: 0;
-        margin-bottom: 0;
-    }
-    
+.profile-img-line {
+    background-color: var(--secondary-color);
+    height: 15px;  /* Grosor de la base */
+    width: 100%;   /* Sobresale por los lados para verse completa */
+    z-index: 2;    /* La línea está un nivel arriba para asegurar que se vea completa */
+    margin-top: -1px; /* Solapamiento de 1px para que no se vea una rendija blanca */
+    position: relative;
+}
+
+/* --- RESPONSIVE DESKTOP --- */
+@media(min-width: 950px) {
     .profile {
+        flex-direction: row; /* Texto izquierda, foto derecha */
         text-align: left;
-        display: flex;
-        justify-content: space-between;
-        max-width: 980px;
+        max-width: 1100px;
         margin: 0 auto;
-        align-items: center;
+        padding-top: 100px;
+        justify-content: space-between;
     }
-    
+
     .profile-title {
-        font-style: 60px;
+        font-size: 60px;
     }
-    
+
     .profile-details {
-        font-size: 25px;
+        font-size: 22px;
         margin: 30px 0;
+        text-align: justify;
     }
-    
-    .profile-btn {
-        font-size: 28px;
+
+    .profile-img {
+        max-width: 450px;
+        transform: scaleX(-1); /* Efecto espejo que tenías */
     }
-    
-    
+
+    .profile-img-line {
+        height: 15px; /* Un poco más gruesa en desktop */
+        bottom: 10px;
+    }
 }

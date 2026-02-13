@@ -11,26 +11,44 @@ import { PortafolioService } from '../servicios/portafolio.service';
 })
 export class PerfilComponent implements OnInit {
 
-  // Definimos la variable para los datos del perfil
   perfil: any[] = [];
+  urlFotoPerfil: string = './../../assets/img/Mi Foto.png'; // Foto inicial por defecto
 
-// Inyectamos el detector de cambios
   private cd = inject(ChangeDetectorRef);
 
-  // Mantenemos la inyección en el constructor para asegurar el Injection Context en Angular 21
   constructor(private datosPortafolio: PortafolioService) { }
 
   ngOnInit(): void {
-  
+    // 1. Cargamos los textos del perfil
+    this.cargarDatosTexto();
+
+    // 2. Cargamos la URL de la foto
+    this.cargarImagenPerfil();
+  }
+
+descargarCV() {
+    this.datosPortafolio.generarPDF();
+  } 
+
+  private cargarDatosTexto(): void {
     this.datosPortafolio.CargarPerfil().subscribe({
       next: (resp) => {
         this.perfil = resp;
         this.cd.detectChanges();
       },
-      error: (err) => {
-        console.error("Error al cargar el perfil en Angular 21:", err);
-      }
+      error: (err) => console.error("Error en textos:", err)
     });
   }
 
+  private cargarImagenPerfil(): void {
+    this.datosPortafolio.CargarFoto().subscribe({
+      next: (resp) => {
+        if (resp) {
+          this.urlFotoPerfil = resp[0].Archivo;   
+          this.cd.detectChanges();
+        }
+      },
+      error: (err) => console.error("Error al cargar la foto:", err)
+    });
+  }
 }

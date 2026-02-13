@@ -9,17 +9,22 @@
                 <h1 class="profile-title">
                     {{item.Titulo2}}
                 </h1>
-                <p class="profile-details">
+                <p class="profile-details"
+                    [style.--fs]="item.fontsize"
+                    [style.--fw]="item.fontweight"
+                    [style.--lh]="item.lineheight"
+                    [style.--mw]="item.maxwidth"
+                    [style.--mg]="item.margin">
                     {{item.Descripcion}}
                 </p>
-                <a class="profile-btn" href={{item.Archivo}} download>
+                <button class="profile-btn" (click)="descargarCV()">
                     {{item.Descarga}}
-                </a>
+                </button>
                 }
             </div>
         </div>
         <span class="profile-img-section">
-            <img class="profile-img" src="./../../assets/img/Mi Foto.png" alt="Programador"/>
+            <img class="profile-img" src="{{urlFotoPerfil}}" alt="Programador"/>
             <div class="profile-img-line"></div>
         </span>
     </section>

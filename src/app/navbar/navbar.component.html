@@ -1,37 +1,34 @@
 <header class="top-header">
-
   <a href="#" class="logo">
-    <img heigth="50" width="50" src="./../../assets/img/Mi Foto.png" alt="Logo RJM">
+    <img height="45" width="45" src="./assets/img/Mi Foto.png" alt="Logo RJM">
     <div class="midata">
-      Raúl Jaramillo <br />
+      <strong>Raúl Jaramillo</strong> <br />
       Analista Funcional Sr SAP SD
     </div>
   </a>
 
   <nav class="top-nav">
-
-    <button class="open-menu" arial-laberl="Abrir menu">
-      <img class="open-menu-img" src="./../../assets/img/Hamburger_icon.svg.png" alt="abrir menu" />
+    <button class="open-menu" aria-label="Abrir menu">
+      <img class="open-menu-img" src="./assets/img/Hamburger_icon.svg.png" alt="abrir menu" width="30" />
     </button>
+
     <ul class="menu">
-      <button class="close-menu" arial-laberl="Cerrar menu">
-        <img src="./../../assets/img/Close_icon.svg.png" alt="cerrar menu" />
+      <button class="close-menu" aria-label="Cerrar menu">
+        <img src="./assets/img/Close_icon.svg.png" alt="cerrar menu" width="25" />
       </button>
 
       <li class="menuref" *ngFor="let item of mimenu">
-        <a  href="{{item.Boton}}">{{item.Opcion}}</a>
+        <a href="{{item.Boton}}">{{item.Opcion}}</a>
       </li>
     </ul>
-
-
   </nav>
 
-  <select  name="selectedIdioma" id="selIdioma" class="form-select" aria-label="Selecciona idioma" (change)="salvar_Idioma(selectedIdioma)" [(ngModel)]="selectedIdioma">
-    <option *ngFor="let optItem of lstidiomas" value="{{optItem.Valor}}" [disabled]="optItem.Estado">
-      {{optItem.Boton}}
-    </option>
-    
-    
- </select>
-
+  <div class="lang-container">
+    <select name="selectedIdioma" id="selIdioma" class="form-select" 
+            (change)="salvar_Idioma(selectedIdioma)" [(ngModel)]="selectedIdioma">
+      <option *ngFor="let optItem of lstidiomas" [value]="optItem.Valor" [disabled]="optItem.Estado === 'false'">
+        {{optItem.Boton}}
+      </option>
+    </select>
+  </div>
 </header>

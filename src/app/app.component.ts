@@ -18,8 +18,8 @@ import { TestimoniosComponent } from './testimonios/testimonios.component';
     CommonModule,
     PerfilComponent,
     ExperienciaComponent,
-    SkillComponent
-//    NavbarComponent,
+    SkillComponent,
+    NavbarComponent
 //    CapacitacionesComponent,
 //    ContactoComponent,
 //    TestimoniosComponent

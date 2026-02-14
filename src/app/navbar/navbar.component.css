@@ -1,66 +1,55 @@
-.logo {
-    grid-area:logo;
-    padding-left: 5px;
+/* VARIABLES DE COLOR (Asegúrate de tenerlas o cámbialas por valores fijos) */
+:root {
+    --primary-color: #ffd700; /* Dorado para hovers */
+    --text-color-inverse: #ffffff;
+    --navbar-shadow-color: rgba(0, 0, 0, 0.3);
+    /* El color de fondo se tomará de tu variable --experience-color */
 }
 
-.top-nav{
-    grid-area: top-nav;
-    padding: 0px;
-}
-
-.form-select {
-    grid-area: form-select;
-}
-
-.open-menu-img {
-    padding-right: 5px;
-}
-
+/* ESTRUCTURA PRINCIPAL DEL HEADER */
 .top-header {
-    display:grid;
-    gap: 1px;
-    grid-template-columns: 200px auto 150px;
-    grid-template-areas: 
-     "logo top-nav form-select";
-
-    font-family: 'Quicksand', sans-serif;
-    background-color: var(--experience-color);
+    display: grid;
+    grid-template-columns: 280px 1fr 150px; /* Logo | Menú | Idioma */
+    grid-template-areas: "logo top-nav form-select";
+    align-items: center;
+    background-color: var(--experience-color, #214380);
     box-shadow: 0 4px 5px var(--navbar-shadow-color);
     position: fixed;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
-    z-index: 100;
+    height: 70px; /* Altura fija para control */
+    z-index: 1000;
+    padding: 0 20px;
+    font-family: 'Quicksand', sans-serif;
 }
 
-.midata {
-    font-size: 10px;
-    padding-left: 3px;
-    color: var(--text-color-inverse)
-}
-
-a {
-    text-decoration: none;
-}
-
-.top-nav {
-display: flex;
-justify-content: space-between;
-padding: 10px;
-max-width: 980px;
-margin: 0 auto;
-}
-
+/* LOGO Y DATOS */
 .logo {
+    grid-area: logo;
     display: flex;
     align-items: center;
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--primary-color);
+    text-decoration: none;
 }
 
 .logo img {
     border-radius: 50%;
+    border: 2px solid white;
+    object-fit: cover;
+}
+
+.midata {
+    font-size: 11px;
+    padding-left: 10px;
+    color: var(--text-color-inverse);
+    line-height: 1.3;
+}
+
+/* CONTENEDOR DE NAVEGACIÓN CENTRAL */
+.top-nav {
+    grid-area: top-nav;
+    display: flex;
+    justify-content: center;
 }
 
 .menu {
@@ -68,130 +57,137 @@ margin: 0 auto;
     list-style: none;
     margin: 0;
     padding: 0;
+    gap: 20px; /* Espacio entre opciones */
 }
 
 .menu li {
-    padding: 0 15px ;
+    display: flex;
+    align-items: center;
 }
 
 .menu a {
     color: var(--text-color-inverse);
-    font-size: 14px;
+    text-decoration: none;
+    font-size: 13px;
     font-weight: 500;
-    line-height: 50px;
     text-transform: uppercase;
     position: relative;
+    padding: 5px 0;
+    transition: color 0.3s ease;
 }
 
+/* Línea animada bajo el menú */
 .menu a::after {
     content: "";
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color);
     position: absolute;
     left: 0;
-    top: calc(100% + 4px);
+    bottom: 0;
     width: 100%;
-    height: 4px;
-
-    opacity: 0;
-    transition: opacity 0.3s;
-
+    height: 3px;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
 }
 
-.menu a.selected::after,
 .menu a:hover::after {
-    opacity: 0.8;
+    transform: scaleX(1);
 }
 
 .menu a:hover {
     color: var(--primary-color);
 }
 
-
-.open-menu,
-.close-menu {
-    display: none;
+/* SELECTOR DE IDIOMA */
+.lang-container {
+    grid-area: form-select;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .form-select {
-    font-size: 10px;
-    width: 90px;
+    font-size: 11px;
+    width: 100px;
     height: 30px;
-    margin-top: auto;
-    margin-bottom: auto;
-    background-color: var(--experience-color);
-    color: var(--text-color-inverse);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 0 5px;
+    cursor: pointer;
 }
 
+.form-select option {
+    background-color: #214380;
+    color: white;
+}
 
+/* BOTONES DE MENÚ (Ocultos en desktop) */
+.open-menu, .close-menu {
+    display: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+/* --- MÓVIL (MAX 950PX) --- */
 @media (max-width: 950px) {
-   
+    .top-header {
+        grid-template-columns: 1fr 60px 60px; /* Logo | Idioma | Botón Menu */
+        grid-template-areas: "logo form-select top-nav";
+        padding: 0 10px;
+    }
+
+    .open-menu {
+        display: block; /* Mostrar botón hamburguesa */
+    }
+
+    .open-menu-img {
+        width: 30px;
+        filter: invert(1); /* Si el icono es negro, lo hace blanco */
+    }
+
+    /* Menú lateral (Drawer) */
     .menu {
         flex-direction: column;
         position: fixed;
-        left: 0;
+        right: -100%; /* Escondido a la derecha */
         top: 0;
-        width: 100%;
-        align-items: center;
-        background-color: var(--menu-mobile-background-color);
-        height: 100%;
-        overflow-y: auto;
-        opacity: 0;
-        pointer-events: none;
+        width: 70%;
+        height: 100vh;
+        background-color: var(--experience-color, #214380);
+        padding: 80px 20px;
+        transition: right 0.4s ease-in-out;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+        z-index: 1001;
     }
-    
-    .menu li {
-        padding: 0;
-    }
-    
-    .menu a {
-        color: var(--text-color-inverse);        
-        line-height: 60px;
-    }   
 
-    .open-menu,
+    /* Clase que debe activar tu JS */
+    .menu_opened {
+        right: 0 !important;
+    }
+
     .close-menu {
         display: block;
-        border: none;
-        background: none;
-        cursor: pointer;
+        position: absolute;
+        top: 20px;
+        right: 20px;
     }
 
-    .close-menu {
-        align-self: flex-end;
-        padding: 20px 15px;
+    .close-menu img {
+        width: 25px;
+        filter: invert(1);
     }
 
-    .menu_opened {
-        opacity: 1;
-        pointer-events: all;
-    }
-
-    .menu a::after {
-        content: none;
-    }
-    
-
-    .menu a:hover,
-    .menu a.selected {
-        color: var(--secondary-color);
-    }
-    
-    .top-header {
-        display:grid;
-        gap: 1px;
-        grid-template-columns: 200px auto 100px;
-        grid-template-areas: 
-         "logo  form-select top-nav";
-    
-        font-family: 'Quicksand', sans-serif;
-        background-color: var(--experience-color);
-        box-shadow: 0 4px 5px var(--navbar-shadow-color);
-        position: fixed;
-        left: 0;
-        top: 0;
+    .menu li {
         width: 100%;
-        z-index: 100;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    
 
+    .menu a {
+        display: block;
+        line-height: 50px;
+        font-size: 16px;
+        width: 100%;
+    }
 }

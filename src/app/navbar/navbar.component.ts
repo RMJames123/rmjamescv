@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { FormsModule } from '@angular/forms';   
 import { PortafolioService } from '../servicios/portafolio.service';
@@ -22,7 +22,8 @@ export class NavbarComponent implements OnInit {
   constructor(
     private _CargaScripts: LoadscriptsService,
     private datosPortafolio: PortafolioService,
-    private LangServ: LanguageService
+    private LangServ: LanguageService,
+    private cdRef: ChangeDetectorRef
   ) { 
     // 2. Cargamos scripts de UI
     this._CargaScripts.Carga(["toggleMenu"]);
@@ -33,12 +34,18 @@ export class NavbarComponent implements OnInit {
   ngOnInit(): void {
     // Implementación de carga de datos con manejo de errores básico
     this.datosPortafolio.CargarIdiomas().subscribe({
-      next: (resp) => this.lstidiomas = resp,
+      next: (resp) => {
+        this.lstidiomas = resp;
+        this.cdRef.detectChanges(); // 3. Avisa a Angular que hay cambios
+      },
       error: (err) => console.error('Error idiomas:', err)
     });
 
     this.datosPortafolio.CargarMenu().subscribe({
-      next: (resp) => this.mimenu = resp,
+      next: (resp) => { 
+        this.mimenu = Array.isArray(resp) ? resp : Object.values(resp);
+        this.cdRef.detectChanges(); // 3. Avisa a Angular que hay cambios
+      },
       error: (err) => console.error('Error menu:', err)
     });
   }

@@ -1,6 +1,7 @@
 .skills {
-    padding: 60px 20px;
-    background-color: #f8f9fa; /* Fondo claro para contrastar con la experiencia */
+    padding: 100px 20px;
+    /*background-color: #f8f9fa; /* Fondo claro para contrastar con la experiencia */
+     background-color: var(--ext-color-inverse, #ffffff);
 }
 
 .skills-container {

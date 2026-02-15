@@ -1,8 +1,11 @@
+
 .testimonials-body {
-    background-color: var(--experience-color, #011d54);
+    padding: 60px 20px;
+    background-color:var(--experience-color, #011d54); 
+    /*background-color: var(--ext-color-inverse, #ffffff);
     margin-top: -2px;
     padding-bottom: 80px;
-    min-height: 400px; /* Usamos min-height en lugar de height fijo */
+    min-height: 400px;  */
 }
 
 .testimonials-title {
@@ -22,7 +25,7 @@
     width: 70%;
     max-width: 600px;
     margin: 0 auto;
-    background-color: rgba(0,0,0,0.2); /* Negro transparente más elegante */
+    background-color:var(--experience-color, #011d54); 
     color: var(--secondary-color, #ffd700);
     padding: 30px;
     border-radius: 15px;

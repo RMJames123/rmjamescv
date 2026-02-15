@@ -1,41 +1,43 @@
 <section class="education" id="education">
-<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="true">
-  <div class="carousel-indicators">
-    <button type="button" data-bs-target="#carouselExampleIndicators" *ngFor="let item of educacion; let i=index;"
-            data="boton" [attr.data-bs-slide-to]="i" [attr.class]="i==0 ? 'active' : null"
-            [attr.aria-current]="i==0 ? true : null"></button>
-  </div>
-<div class="carousel-inner">
-  <div *ngFor="let item of educacion; let i=index;" [attr.class]="i==0 ? 'carousel-item active' : 'carousel-item'">
+  <div class="education-body">
+    <h2 *ngFor="let titulo of titeducacion" class="education-title">
+      {{titulo.Opcion}}
+    </h2>
+  
+    <table class="education-table">
+      <tbody>
+        <tr *ngFor="let item of educacion; index as i">
+          
+          <ng-container *ngIf="i % 2 === 0">
+            <td class="education text-end-custom">
+              <div class="education-date">{{item.Fecha}}</div>
+              <div class="education-name">{{item.Titulo}}</div>
+              <div class="education-company">{{item.Institucion}}</div>
+              <div class="education-location">{{item.Ubicacion}}</div>
+            </td>
+            <td class="line"></td>
+            <td class="empty"></td>
+          </ng-container>
 
-    <div class="container p-4">
-      <div class="row">
-        
-              <div class="col-md-8">
-                  <div class="card text-center">
-                      <div class="card-body">
-                              <h3 class="card-title">
-                                  {{item.Titulo}}
-                              </h3>
-                              <h5>{{item.Institucion}}</h5>
-                              <h5>{{item.Ubicacion}}</h5>
-                              <h5>{{item.Fecha}}</h5>
-                      </div>
-                  </div>
-              </div>
-        
-      </div>
-    </div>
-    
+          <ng-container *ngIf="i % 2 !== 0">
+            <td class="empty"></td>
+            <td class="line"></td>
+            <td class="education text-start-custom">
+              <div class="education-date">{{item.Fecha}}</div>
+              <div class="education-name">{{item.Titulo}}</div>
+              <div class="education-company">{{item.Institucion}}</div>
+              <div class="education-location">{{item.Ubicacion}}</div>
+            </td>
+          </ng-container>
+
+        </tr>
+      </tbody>
+    </table>
   </div>
-</div>
-<button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-  <span class="visually-hidden">Previous</span>
-</button>
-<button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-  <span class="carousel-control-next-icon" aria-hidden="true"></span>
-  <span class="visually-hidden">Next</span>
-</button>
-</div>
+
+  <div class="olafoot">
+    <svg viewBox="0 0 500 150" preserveAspectRatio="none">
+      <path d="M0.00,49.99 C149.99,150.00 300.75,-49.99 500.00,49.99 L500.00,0.00 L0.00,0.00 Z" style="stroke: none; fill: #011d54"></path>
+    </svg>
+  </div>
 </section>

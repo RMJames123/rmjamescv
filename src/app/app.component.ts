@@ -10,6 +10,7 @@ import { SkillComponent } from './skill/skill.component';
 import { CapacitacionesComponent } from './capacitaciones/capacitaciones.component';
 import { ContactoComponent } from './contacto/contacto.component';
 import { TestimoniosComponent } from './testimonios/testimonios.component';
+import { EducacionComponent } from "./educacion/educacion.component";
 
 @Component({
   selector: 'app-root',
@@ -22,8 +23,9 @@ import { TestimoniosComponent } from './testimonios/testimonios.component';
     NavbarComponent,
     CapacitacionesComponent,
     TestimoniosComponent,
-    ContactoComponent
-  ],
+    ContactoComponent,
+    EducacionComponent
+],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

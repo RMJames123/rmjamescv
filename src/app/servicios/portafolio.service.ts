@@ -70,6 +70,7 @@ export class PortafolioService {
   TituloCapacitaciones(): Observable<any> { return this.getMenuByBtnLang('trainings'); }
   TituloTestimonios(): Observable<any> { return this.getMenuByBtnLang('testimonials'); }
   TituloContacto(): Observable<any> { return this.getMenuByBtnLang('contact'); }
+  TituloEducacion(): Observable<any> { return this.getMenuByBtnLang('education'); }
 
   // --- GENERACIÓN DE CV (PDF) ---
   async generarPDF() {

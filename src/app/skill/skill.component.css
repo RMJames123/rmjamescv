@@ -1,51 +1,81 @@
-.skills{
+.skills {
+    padding: 60px 20px;
+    background-color: #f8f9fa; /* Fondo claro para contrastar con la experiencia */
+}
+
+.skills-container {
     max-width: 980px;
     margin: 0 auto;
-    padding-top: 70px;
-}
-
-.skills-title{
-    font-size: 30px;
-    font-weight: bold;
-    text-transform: uppercase;
     text-align: center;
-    color: var(--experience-color);
 }
 
-.skills-skill{
-    font-size: 20px;
-    font-weight: 500;
-    box-shadow: 0 4px 10px rgba(0,0,025);
-    border-radius: 42px;
-    padding: 0.5em 0.7em;
-    margin: 10px;
-    color: var(--experience-color);
+.skills-title {
+    font-family: 'Quicksand', sans-serif;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 35px;
+    color: var(--experience-color, #011d54);
+    margin-bottom: 40px;
+    position: relative;
+    display: inline-block;
 }
 
-.skills-list{
-    list-style: none;
-    padding: 0;
+/* Línea decorativa bajo el título */
+.skills-title::after {
+    content: "";
+    width: 60px;
+    height: 4px;
+    background-color: var(--secondary-color, #ffd700);
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.skills-list {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    gap: 15px;
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
 }
 
-@media(min-width: 950px){
-    .skills-title{
-        font-size: 50px;
-    }
-    
-    .skills-skill{
-        font-size: 30px;
-        margin: 20px;
-    }
-    
-    .skills-list{
-        list-style: none;
-        padding: 0;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+.skills-skill {
+    background-color: white;
+    color: var(--experience-color, #011d54);
+    padding: 10px 25px;
+    border-radius: 50px; /* Forma de píldora */
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(1, 29, 84, 0.1);
+    transition: all 0.3s ease;
+    cursor: default;
+}
 
+/* Animación al pasar el mouse */
+.skills-skill:hover {
+    background-color: var(--experience-color, #011d54);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(1, 29, 84, 0.2);
+    border-color: var(--secondary-color, #ffd700);
+}
+
+.skill-name {
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .skills-title {
+        font-size: 28px;
+    }
+    
+    .skills-skill {
+        padding: 8px 18px;
+        font-size: 13px;
+    }
 }

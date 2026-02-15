@@ -1,29 +1,50 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Necesario para solucionar los avisos NG8103 (*ngFor)
+import { Component, OnInit, ChangeDetectorRef, inject, Injector, runInInjectionContext } from '@angular/core';
+import { CommonModule } from '@angular/common'; 
 import { PortafolioService } from '../servicios/portafolio.service';
 import emailjs, { EmailJSResponseStatus } from '@emailjs/browser';
 
 @Component({
   selector: 'app-contacto',
-  standalone: true, // Habilitado para compatibilidad con Angular 21
-  imports: [CommonModule], // Importamos CommonModule para habilitar las directivas básicas
+  standalone: true, 
+  imports: [CommonModule], 
   templateUrl: './contacto.component.html',
   styleUrls: ['./contacto.component.css']
 })
 export class ContactoComponent implements OnInit {
+  // Inyecciones modernas
+  private datosPortafolio = inject(PortafolioService);
+  private cdRef = inject(ChangeDetectorRef);
+  private injector = inject(Injector);
 
   contacto: any[] = [];
   titcontacto: any[] = [];
 
-  constructor(private datosPortafolio: PortafolioService) {}
+  constructor() {}
 
   ngOnInit(): void {
-    this.datosPortafolio.CargarContacto().subscribe(resp => {
-      this.contacto = resp;
+    // Aplicamos el contexto de inyección seguro para Firebase
+    runInInjectionContext(this.injector, () => {
+      this.cargarDatosContacto();
+    });
+  }
+
+  private cargarDatosContacto(): void {
+    // 1. Cargar datos de contacto (redes sociales, links, etc.)
+    this.datosPortafolio.CargarContacto().subscribe({
+      next: (resp) => {
+        this.contacto = Array.isArray(resp) ? resp : Object.values(resp);
+        this.cdRef.detectChanges();
+      },
+      error: (err) => console.error("Error cargando contacto:", err)
     });
 
-    this.datosPortafolio.TituloContacto().subscribe(resp => {
-      this.titcontacto = resp;
+    // 2. Cargar títulos dinámicos
+    this.datosPortafolio.TituloContacto().subscribe({
+      next: (resp) => {
+        this.titcontacto = Array.isArray(resp) ? resp : Object.values(resp);
+        this.cdRef.detectChanges();
+      },
+      error: (err) => console.error("Error cargando títulos contacto:", err)
     });
   }
 
@@ -57,15 +78,16 @@ export class ContactoComponent implements OnInit {
 
     if (msgerror === "") {
       e.preventDefault();
+      // EmailJS funciona fuera de Firebase, no necesita runInInjectionContext
       emailjs.sendForm('SendEmailHot', 'template_erg8wvo', e.target as HTMLFormElement, 'P4lgFglXabNxfC758')
         .then((result: EmailJSResponseStatus) => {
-          alert("Email enviado!!!");
+          alert("✅ ¡Email enviado con éxito!");
           form?.reset();
         }, (error) => {
-          alert(error.text);
+          alert("❌ Error al enviar: " + error.text);
         });
     } else {
-      alert(msgerror);
+      alert("⚠️ " + msgerror);
     }
   }
 }

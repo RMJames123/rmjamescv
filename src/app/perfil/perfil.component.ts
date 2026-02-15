@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, runInInjectionContext, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { PortafolioService } from '../servicios/portafolio.service';
 
@@ -10,45 +10,49 @@ import { PortafolioService } from '../servicios/portafolio.service';
   styleUrls: ['./perfil.component.css']
 })
 export class PerfilComponent implements OnInit {
-
   perfil: any[] = [];
-  urlFotoPerfil: string = './../../assets/img/Mi Foto.png'; // Foto inicial por defecto
+  urlFotoPerfil: string = 'assets/img/Mi Foto.png'; 
 
+  // Inyectamos el inyector global para asegurar el contexto
+  private injector = inject(Injector);
   private cd = inject(ChangeDetectorRef);
+  private datosPortafolio = inject(PortafolioService);
 
-  constructor(private datosPortafolio: PortafolioService) { }
+  constructor() { }
 
   ngOnInit(): void {
-    // 1. Cargamos los textos del perfil
-    this.cargarDatosTexto();
-
-    // 2. Cargamos la URL de la foto
-    this.cargarImagenPerfil();
+    // Envolvemos las llamadas para asegurar que NgZone y Firebase tengan contexto
+    runInInjectionContext(this.injector, () => {
+      this.cargarDatosTexto();
+      this.cargarImagenPerfil();
+    });
   }
 
-descargarCV() {
+  descargarCV() {
     this.datosPortafolio.generarPDF();
   } 
 
   private cargarDatosTexto(): void {
     this.datosPortafolio.CargarPerfil().subscribe({
       next: (resp) => {
+        console.log("Perfil OK:", resp);
         this.perfil = resp;
         this.cd.detectChanges();
       },
-      error: (err) => console.error("Error en textos:", err)
+      error: (err) => console.error("Error Perfil:", err)
     });
   }
 
   private cargarImagenPerfil(): void {
     this.datosPortafolio.CargarFoto().subscribe({
       next: (resp) => {
-        if (resp) {
+        console.log("Foto OK:", resp);
+        if (resp && resp.length > 0) {
           this.urlFotoPerfil = resp[0].Archivo;   
           this.cd.detectChanges();
         }
       },
-      error: (err) => console.error("Error al cargar la foto:", err)
+      error: (err) => console.error("Error Foto:", err)
     });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, Injector, runInInjectionContext } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { FormsModule } from '@angular/forms';   
 import { PortafolioService } from '../servicios/portafolio.service';
@@ -14,44 +14,61 @@ import { LanguageService } from '../servicios/language.service';
 })
 export class NavbarComponent implements OnInit {
 
-  // 1. Solo declaramos la variable, no la inicializamos con el servicio aquí
   selectedIdioma: string = ''; 
   mimenu: any[] = [];
   lstidiomas: any[] = [];
 
-  constructor(
-    private _CargaScripts: LoadscriptsService,
-    private datosPortafolio: PortafolioService,
-    private LangServ: LanguageService,
-    private cdRef: ChangeDetectorRef
-  ) { 
-    // 2. Cargamos scripts de UI
+  // Usamos inject para las nuevas versiones de Angular
+  private injector = inject(Injector);
+  private _CargaScripts = inject(LoadscriptsService);
+  private datosPortafolio = inject(PortafolioService);
+  private LangServ = inject(LanguageService);
+  private cdRef = inject(ChangeDetectorRef);
+
+  constructor() { 
+    // Cargamos scripts de UI (animaciones de menú, etc.)
     this._CargaScripts.Carga(["toggleMenu"]);
-    // 3. Inicializamos el idioma después de que el servicio ha sido inyectado
-    this.selectedIdioma = this.LangServ.sIdioma;
   }
 
   ngOnInit(): void {
-    // Implementación de carga de datos con manejo de errores básico
+    // Sincronizamos el idioma visual con el servicio
+    this.selectedIdioma = this.LangServ.sIdioma;
+
+    // Ejecutamos las llamadas de Firebase dentro del contexto de inyección seguro
+    runInInjectionContext(this.injector, () => {
+      this.cargarListaIdiomas();
+      this.cargarMenu();
+    });
+  }
+
+  private cargarListaIdiomas(): void {
     this.datosPortafolio.CargarIdiomas().subscribe({
       next: (resp) => {
-        this.lstidiomas = resp;
-        this.cdRef.detectChanges(); // 3. Avisa a Angular que hay cambios
+        // Firebase a veces devuelve un objeto, nos aseguramos que sea Array
+        this.lstidiomas = Array.isArray(resp) ? resp : Object.values(resp);
+        this.cdRef.detectChanges();
       },
-      error: (err) => console.error('Error idiomas:', err)
+      error: (err) => console.error('Error al cargar idiomas:', err)
     });
+  }
 
+  private cargarMenu(): void {
     this.datosPortafolio.CargarMenu().subscribe({
       next: (resp) => { 
-        this.mimenu = Array.isArray(resp) ? resp : Object.values(resp);
-        this.cdRef.detectChanges(); // 3. Avisa a Angular que hay cambios
+        // Convertimos a array y ordenamos por el campo 'Orden' si existe
+        const data = Array.isArray(resp) ? resp : Object.values(resp);
+        this.mimenu = data.sort((a: any, b: any) => (a.Orden || 0) - (b.Orden || 0));
+        this.cdRef.detectChanges();
       },
-      error: (err) => console.error('Error menu:', err)
+      error: (err) => console.error('Error al cargar el menú:', err)
     });
   }
 
   salvar_Idioma(sIdioma: string) {
-    this.LangServ.grabar_language(sIdioma);
-    window.location.reload();
+    if (sIdioma) {
+      this.LangServ.grabar_language(sIdioma);
+      // Recargamos para que todo el árbol de componentes tome el nuevo idioma desde Firebase
+      window.location.reload();
+    }
   }
 }

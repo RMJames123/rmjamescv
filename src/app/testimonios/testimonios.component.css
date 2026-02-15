@@ -1,149 +1,71 @@
 .testimonials-body {
-    background-color: var(--experience-color);
+    background-color: var(--experience-color, #011d54);
     margin-top: -2px;
-    height: 400px;
+    padding-bottom: 80px;
+    min-height: 400px; /* Usamos min-height en lugar de height fijo */
 }
 
-.testimonials-title{
+.testimonials-title {
     text-align: center;
     text-transform: uppercase;
     font-weight: bold;
-    font-size: 30px;    
-    margin: 25px;
-    margin-top: -2px;
-    color: var(--text-color-inverse);
+    font-size: 30px;
+    padding: 25px 0;
+    color: var(--text-color-inverse, #ffffff);
 }
 
+/* LA TARJETA */
+.card-testimonio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 70%;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: rgba(0,0,0,0.2); /* Negro transparente más elegante */
+    color: var(--secondary-color, #ffd700);
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
 
 .comentario {
-    grid-area: comentario;
     text-align: center;
     font-size: 18px;
-    font-weight: 300;
-    padding: 10px;
-}
-
-.img {
-    grid-area: img;
-    display: grid;
-    width: 90px;
-    height: 90px;
-    padding: 10px;
-}
-
-.nombre {
-    grid-area: nombre;
     font-style: italic;
-    margin-left: 10px;
-    font-weight: 300;
+    margin-bottom: 20px;
+    min-height: 80px;
 }
 
-.cargo {
-    grid-area: cargo;
-    margin-left: 10px;
-    font-weight: 300;
+.footer-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-.empresa {
-    grid-area: empresa;
-    margin-left: 10px;
-    font-weight: 300;
+.img-perfil {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid var(--secondary-color);
+    object-fit: cover;
 }
 
 .datos {
-    grid-area: datos;
-    display: grid;
-    gap: 1px;
-    grid-template-rows: 30px 30px 30px;
-    grid-template-areas:
-        "nombre"
-        "cargo"
-        "empresa";
+    display: flex;
+    flex-direction: column;
+    text-align: left;
 }
 
-.card {
-    display: grid;
-    gap: 1px;
-    width: 75%;
-    height: 250px;
-    margin: auto;
-    grid-template-columns: 90px auto;
-    grid-template-rows: auto 90px;
-    grid-template-areas:
-        "comentario comentario"
-        "img datos";
+.nombre { font-weight: bold; font-size: 16px; }
+.cargo { font-size: 14px; color: white; }
+.empresa { font-size: 13px; opacity: 0.8; color: white;}
 
-    background-color: black;
-    color: var(--secondary-color);
-}
-
+/* IMPORTANTE: Altura del carrusel */
 .carousel-inner {
-    height: 300px;
+    padding: 20px 0 60px 0;
 }
 
-@media(min-width: 600px) {
-    .testimonials-body {
-        background-color: var(--experience-color);
-        margin-top: -2px;
-        height: 400px;
-    }
-
-    .nombre {
-        margin-left: 2px;
-    }
-
-    .cargo {
-        grid-area: cargo;
-        margin-left: 2px;
-    }
-
-    .empresa {
-        grid-area: empresa;
-        margin-left: 2px;
-    }
-
-    .datos {
-        grid-template-rows: 20px 20px 20px;
-        padding: auto;
-    }
-
-    .img {
-        width: 70px;
-        height: 70px;
-    }
-
-    .card {
-        width: 60%;
-        height: 200px;
-        grid-template-columns: auto 70px 160px;
-        grid-template-rows: 100px 70px auto;
-        grid-template-areas:
-            "comentario comentario comentario"
-            ".          img        datos ";
-    }
-
-    .carousel-inner {
-        height: 250px;
-    }
-
-    .comentario {
-        padding: auto;
-
-    }
-
-}
-
-@media(min-width: 900px) {
-
-    .card {
-        width: 40%;
-        height: 200px;
-        grid-template-columns: auto 70px 160px;
-        grid-template-rows: 100px 70px auto;
-        grid-template-areas:
-            "comentario comentario comentario"
-            ".          img        datos ";
-    }
-
-
+.wave-top {
+    height: 100px;
 }

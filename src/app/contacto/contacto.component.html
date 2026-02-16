@@ -6,76 +6,60 @@
 
   <div *ngFor="let item of contacto" class="contact-details">
     <div class="contact-details-group">
-      <p class="contact-label">
-        {{item.Direccion}}:
-      </p>
-      <p class="contact-text">
-        {{item.Ubicacion}}
-      </p>
+      <p class="contact-label">{{item.Direccion}}:</p>
+      <p class="contact-text">{{item.Ubicacion}}</p>
     </div>
     <div class="contact-details-group">
-      <p class="contact-label">
-        {{item.Email2}}:
-      </p>
-      <p class="contact-text">
-        {{item.EmailContact}}
-      </p>
+      <p class="contact-label">{{item.Email2}}:</p>
+      <p class="contact-text">{{item.EmailContact}}</p>
     </div>
     <div class="contact-details-group">
-      <p class="contact-text">
-        {{item.Mensaje2}}
-      </p>
+      <p class="contact-text">{{item.Mensaje2}}</p>
     </div>
   </div>
 
-  <form id="frmContacto" class="contact-form" (submit)="sendEmail($event)">
-    <div *ngFor="let item of contacto">
-      <div class="contact-form-group">
-        <label for="name">
-          {{item.Nombre}}:
-        </label>
-        <input class="form-control" type="text" name="name" id="name" autocomplete="on" required />
-      </div>
-      <div class="contact-form-group">
-        <label for="email">
-          {{item.Email1}}:
-        </label>
-        <input class="form-control" type="email" name="email" id="email" autocomplete="on" required />
-      </div>
-      <div class="contact-form-group">
-        <label for="message">
-          {{item.Mensaje1}}:
-        </label>
-        <textarea class="form-control" name="message" rows="6" id="message" autocomplete="off" required></textarea>
-      </div>
-
-      <button type="submit" class="contact-form-submit">
-        {{item.Boton}}
-      </button>
-
+  <form id="frmContacto" class="contact-form" (submit)="sendEmail($event)" *ngIf="contacto.length > 0">
+    
+    <div class="contact-form-group">
+      <label for="name">{{contacto[0].Nombre}}:</label>
+      <input class="form-control" type="text" name="name" id="name" autocomplete="on" required />
     </div>
+
+    <div class="contact-form-group">
+      <label for="email">{{contacto[0].Email1}}:</label>
+      <input class="form-control" type="email" name="email" id="email" autocomplete="on" required />
+    </div>
+
+    <div class="contact-form-group">
+      <label for="message">{{contacto[0].Mensaje1}}:</label>
+      <textarea class="form-control" name="message" rows="6" id="message" autocomplete="off" required></textarea>
+    </div>
+
+    <button type="submit" class="contact-form-submit">
+      {{contacto[0].Boton}}
+    </button>
   </form>
 
   <nav class="social">
     <ul class="social-list">
       <li class="social-item">
-        <a href="https://twitter.com/rmjaramillo" class="social-link">
-          <img src="./../../assets/img/Social/Twitter.png" alt="Twitter">
+        <a href="https://twitter.com/rmjaramillo" target="_blank" class="social-link">
+          <img src="assets/img/Social/Twitter.png" alt="Twitter">
         </a>
       </li>
       <li class="social-item">
-        <a href="https://www.facebook.com/raul.martin.7583" class="social-link">
-          <img src="./../../assets/img/Social/Facebook.png" alt="Facebook">
+        <a href="https://www.facebook.com/raul.martin.7583" target="_blank" class="social-link">
+          <img src="assets/img/Social/Facebook.png" alt="Facebook">
         </a>
       </li>
       <li class="social-item">
-        <a href="https://www.linkedin.com/in/raul-martin-jaramillo-mesones-28847447/" class="social-link">
-          <img src="./../../assets/img/Social/LinkedIn.png" alt="linkedin">
+        <a href="https://www.linkedin.com/in/raul-martin-jaramillo-mesones-28847447/" target="_blank" class="social-link">
+          <img src="assets/img/Social/LinkedIn.png" alt="LinkedIn">
         </a>
       </li>
       <li class="social-item">
-        <a href="https://www.instagram.com/raulmartin631/">
-          <img src="./../../assets/img/Social/Instagram.png" alt="instagram">
+        <a href="https://www.instagram.com/raulmartin631/" target="_blank" class="social-link">
+          <img src="assets/img/Social/Instagram.png" alt="Instagram">
         </a>
       </li>
     </ul>

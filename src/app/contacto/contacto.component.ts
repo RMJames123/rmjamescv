@@ -11,7 +11,7 @@ import emailjs, { EmailJSResponseStatus } from '@emailjs/browser';
   styleUrls: ['./contacto.component.css']
 })
 export class ContactoComponent implements OnInit {
-  // Inyecciones modernas
+  // Inyecciones modernas de Angular 17+
   private datosPortafolio = inject(PortafolioService);
   private cdRef = inject(ChangeDetectorRef);
   private injector = inject(Injector);
@@ -29,16 +29,17 @@ export class ContactoComponent implements OnInit {
   }
 
   private cargarDatosContacto(): void {
-    // 1. Cargar datos de contacto (redes sociales, links, etc.)
+    // 1. Cargar datos de contacto (Ubicación, Emails de texto, Botones)
     this.datosPortafolio.CargarContacto().subscribe({
       next: (resp) => {
+        // Aseguramos que sea un Array para evitar errores de iteración
         this.contacto = Array.isArray(resp) ? resp : Object.values(resp);
         this.cdRef.detectChanges();
       },
       error: (err) => console.error("Error cargando contacto:", err)
     });
 
-    // 2. Cargar títulos dinámicos
+    // 2. Cargar títulos dinámicos de la sección
     this.datosPortafolio.TituloContacto().subscribe({
       next: (resp) => {
         this.titcontacto = Array.isArray(resp) ? resp : Object.values(resp);
@@ -48,46 +49,50 @@ export class ContactoComponent implements OnInit {
     });
   }
 
-  public sendEmail(e: Event) {
-    const name = document.getElementById('name') as HTMLInputElement | null;
-    const email = document.getElementById('email') as HTMLInputElement | null;
-    const message = document.getElementById('message') as HTMLInputElement | null;
-    const form = document.getElementById('frmContacto') as HTMLFormElement | null;
+  public sendEmail(e: Event): void {
+    // 1. Prevenir la recarga de la página inmediatamente
+    e.preventDefault();
+
+    const form = e.target as HTMLFormElement;
     
-    let msgerror: string = "";
-    const EMAIL_CHAR = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+    // Obtenemos los valores para validar
+    const name = (form.querySelector('#name') as HTMLInputElement)?.value;
+    const email = (form.querySelector('#email') as HTMLInputElement)?.value;
+    const message = (form.querySelector('#message') as HTMLTextAreaElement)?.value;
 
-    if (!name?.value) {
-      msgerror = "Ingrese un nombre";
+    // 2. Validación Robusta
+    if (!name || name.trim() === "") {
+      alert("⚠️ Por favor, ingrese su nombre.");
+      return;
     }
 
-    if (msgerror === "") {
-      if (!email?.value) {
-        msgerror = "Ingrese un email";
-      } else {
-        let strEmail = email?.value;
-        if (!strEmail?.match(EMAIL_CHAR)) {
-          msgerror = "Email no válido";
-        }
-      }
+    const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+    if (!email || !EMAIL_REGEX.test(email)) {
+      alert("⚠️ Por favor, ingrese un email válido.");
+      return;
     }
 
-    if (msgerror === "" && !message?.value) {
-      msgerror = "Ingrese un mensaje";
+    if (!message || message.trim() === "") {
+      alert("⚠️ El mensaje no puede estar vacío.");
+      return;
     }
 
-    if (msgerror === "") {
-      e.preventDefault();
-      // EmailJS funciona fuera de Firebase, no necesita runInInjectionContext
-      emailjs.sendForm('SendEmailHot', 'template_erg8wvo', e.target as HTMLFormElement, 'P4lgFglXabNxfC758')
-        .then((result: EmailJSResponseStatus) => {
-          alert("✅ ¡Email enviado con éxito!");
-          form?.reset();
-        }, (error) => {
-          alert("❌ Error al enviar: " + error.text);
-        });
-    } else {
-      alert("⚠️ " + msgerror);
-    }
+    // 3. Envío mediante EmailJS
+    // Importante: Los IDs deben ser exactos a los de tu cuenta de EmailJS
+    const SERVICE_ID = 'SendEmailHot';
+    const TEMPLATE_ID = 'template_erg8wvo';
+    const PUBLIC_KEY = 'P4lgFglXabNxfC758';
+
+    emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form, PUBLIC_KEY)
+      .then((result: EmailJSResponseStatus) => {
+        console.log('✅ Éxito:', result.text);
+        alert("✅ ¡Mensaje enviado con éxito! Me pondré en contacto pronto.");
+        form.reset(); // Limpia el formulario tras el éxito
+      })
+      .catch((error) => {
+        console.error("❌ Error de EmailJS:", error);
+        // El error 412 suele detallarse aquí
+        alert(`❌ Error al enviar: ${error.text || 'Error de precondición'}. Verifique la consola.`);
+      });
   }
 }

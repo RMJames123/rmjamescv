@@ -15,8 +15,9 @@ import { LanguageService } from '../servicios/language.service';
 export class NavbarComponent implements OnInit {
 
   selectedIdioma: string = ''; 
-  mimenu: any[] = [];
+  mimenu: any[] = [];  
   lstidiomas: any[] = [];
+  urlFotoPerfil: string = 'assets/img/Mi Foto.png'; 
 
   // Usamos inject para las nuevas versiones de Angular
   private injector = inject(Injector);
@@ -38,6 +39,7 @@ export class NavbarComponent implements OnInit {
     runInInjectionContext(this.injector, () => {
       this.cargarListaIdiomas();
       this.cargarMenu();
+      this.cargarImagenPerfil();
     });
   }
 
@@ -61,6 +63,19 @@ export class NavbarComponent implements OnInit {
         this.cdRef.detectChanges();
       },
       error: (err) => console.error('Error al cargar el menú:', err)
+    });
+  }
+
+  private cargarImagenPerfil(): void {
+    this.datosPortafolio.CargarFoto().subscribe({
+      next: (resp) => {
+        console.log("Foto OK:", resp);
+        if (resp && resp.length > 0) {
+          this.urlFotoPerfil = resp[0].Archivo;   
+          this.cdRef.detectChanges();
+        }
+      },
+      error: (err) => console.error("Error Foto:", err)
     });
   }
 

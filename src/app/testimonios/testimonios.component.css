@@ -1,4 +1,3 @@
-
 .testimonials-body {
     padding: 60px 20px;
     background-color:var(--experience-color, #011d54); 
@@ -69,6 +68,23 @@
     padding: 20px 0 60px 0;
 }
 
-.wave-top {
-    height: 100px;
+/* --- ONDAS (WAVES) --- */
+.olafoot {
+    height: 120px;
+    width: 100%;
+    /* El fondo del bloque es azul para que coincida con el body de arriba */
+    background-color: var(--text-color-inverse, #ffffff); 
+    display: block;
+    margin-top: -1px; /* Sella cualquier espacio */
+}
+
+.olafoot svg {
+    height: 100%;
+    width: 100%;
+    display: block;
+}
+
+/* Ajuste extra para el contenedor principal si es necesario */
+.testimonials {
+    background-color: var(--experience-color, #011d54);
 }

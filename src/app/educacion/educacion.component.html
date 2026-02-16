@@ -1,4 +1,10 @@
 <section class="education" id="education">
+  <div class="wave-container">
+    <svg viewBox="0 0 500 150" preserveAspectRatio="none">
+      <path d="M0.00,49.99 C149.99,150.00 349.81,-49.99 500.00,49.99 L500.00,150.00 L0.00,150.00 Z" style="stroke: none; fill: #f8f9fa"></path>
+    </svg>
+  </div>
+
   <div class="education-body">
     <h2 *ngFor="let titulo of titeducacion" class="education-title">
       {{titulo.Opcion}}
@@ -9,7 +15,7 @@
         <tr *ngFor="let item of educacion; index as i">
           
           <ng-container *ngIf="i % 2 === 0">
-            <td class="education text-end-custom">
+            <td class="education-cell text-end-custom">
               <div class="education-date">{{item.Fecha}}</div>
               <div class="education-name">{{item.Titulo}}</div>
               <div class="education-company">{{item.Institucion}}</div>
@@ -22,7 +28,7 @@
           <ng-container *ngIf="i % 2 !== 0">
             <td class="empty"></td>
             <td class="line"></td>
-            <td class="education text-start-custom">
+            <td class="education-cell text-start-custom">
               <div class="education-date">{{item.Fecha}}</div>
               <div class="education-name">{{item.Titulo}}</div>
               <div class="education-company">{{item.Institucion}}</div>
@@ -37,7 +43,7 @@
 
   <div class="olafoot">
     <svg viewBox="0 0 500 150" preserveAspectRatio="none">
-      <path d="M0.00,49.99 C149.99,150.00 300.75,-49.99 500.00,49.99 L500.00,0.00 L0.00,0.00 Z" style="stroke: none; fill: #011d54"></path>
+      <path d="M0.00,49.99 C149.99,150.00 300.75,-49.99 500.00,49.99 L500.00,0.00 L0.00,0.00 Z" style="stroke: none; fill: #f8f9fa"></path>
     </svg>
   </div>
 </section>

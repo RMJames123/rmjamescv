@@ -1,15 +1,16 @@
-/* --- CONTENEDOR PRINCIPAL (Copiado de Experiencia) --- */
+/* --- CONTENEDOR PRINCIPAL --- */
 .education {
-    padding: 100px 20px;
     display: flex;
     flex-direction: column;
     font-family: 'Quicksand', sans-serif;
-    background-color: var(--text-color-inverse, #ffffff);
+    /* Evita el scroll horizontal por las ondas */
+    overflow: hidden; 
 }
 
 .education-body {
-    background-color: var(--text-color-inverse, #ffffff);
-    color:  var(--experience-color, #011d54);
+    /* El color de fondo debe ser el mismo que el relleno de la ola */
+    background-color: #f8f9fa; 
+    color: var(--experience-color, #011d54);
     margin-top: -2px;
     padding-bottom: 50px;
 }
@@ -18,41 +19,39 @@
     text-align: center;
     text-transform: uppercase;
     font-weight: bold;
-    font-size: 40px; /* Igual a experiencias-title */
-    margin: 40px 0;
+    font-size: 40px;
+    margin: 20px 0 40px 0; /* Ajustado para que no pegue arriba */
     color: var(--experience-color, #011d54);
 }
 
-/* --- TABLA Y ESTRUCTURA DEL TIMELINE (Exactamente igual a Experiencia) --- */
+/* --- TABLA Y ESTRUCTURA --- */
 .education-table {
     border-collapse: collapse;
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
-    table-layout: fixed; /* Esto es lo que garantiza que la línea no se estire */
+    table-layout: fixed;
 }
 
-/* Celdas de contenido */
-.education {
+/* Cambié el nombre a .education-cell para no confundir con el componente */
+.education-cell {
     padding: 30px 40px;
     vertical-align: top;
-    text-align: left; 
 }
 
-/* Celda vacía para el zigzag */
-.empty {
-    width: 45%;
-}
+.text-end-custom { text-align: right; }
+.text-start-custom { text-align: left; }
 
-/* --- LÍNEA CENTRAL (La que querías igualar) --- */
+.empty { width: 45%; }
+
+/* --- LÍNEA CENTRAL --- */
 .line {
-    width: 4px; /* Ancho exacto de Experiencia */
+    width: 4px;
     background-color: var(--experience-color, #011d54);
     position: relative;
     padding: 0;
 }
 
-/* El círculo (bolita) en el timeline */
 .line::before {
     content: "";
     display: block;
@@ -68,7 +67,7 @@
     z-index: 10;
 }
 
-/* --- ESTILOS DE TEXTO (Adaptados al esquema de Capacitaciones) --- */
+/* --- ESTILOS DE TEXTO --- */
 .education-date {
     font-size: 22px;
     font-weight: bold;
@@ -81,6 +80,7 @@
     text-transform: uppercase;
     font-weight: bold;
     margin-bottom: 5px;
+    color: var(--experience-color, #011d54);
 }
 
 .education-company {
@@ -88,53 +88,47 @@
     font-size: 17px;
     font-style: italic;
     margin-bottom: 10px;
-    opacity: 0.9;
+    color: #444; /* Un gris oscuro para mejor lectura en blanco */
 }
 
 .education-location {
     font-size: 14px;
-    margin-bottom: 15px;
-    color: #cbd5e0;
+    color: #777;
 }
 
-/* --- RESPONSIVE (Móviles) --- */
-@media (max-width: 950px) {
-    .education-table {
-        display: block;
-    }
-
-    .education-table tr {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 30px;
-    }
-
-    .empty {
-        display: none;
-    }
-
-.line {
-    width: 4px; 
-    background-color: var(--experience-color, #011d54);
-    position: relative;
-    padding: 0;
-}
-    .education {
-        width: 100% !important;
-        padding: 20px;
-        border-left: 3px solid var(--secondary-color, #ffd700);
-    }
-}
-
-/* --- SVG / WAVES --- */
-.wave-container, .olafoot {
+/* --- ONDAS (WAVES) --- */
+.wave-container {
     height: 120px;
     width: 100%;
-    background-color: #f8f9fa; /* Asegura fondo continuo */
+    /* Color de fondo: debe ser el azul del componente anterior */
+    background-color: var(--experience-color, #011d54); 
+}
+
+.olafoot {
+    height: 120px;
+    width: 100%;
+    /* Fondo de la ola inferior: transparente o el color del siguiente componente */
+    background-color: var(--experience-color, #011d54);
 }
 
 .wave-container svg, .olafoot svg {
     height: 100%;
     width: 100%;
     display: block;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 950px) {
+    .education-table, .education-table tr {
+        display: block;
+        width: 100%;
+    }
+    .empty, .line { display: none; }
+    .education-cell {
+        width: 100% !important;
+        text-align: left !important;
+        padding: 20px;
+        border-left: 4px solid var(--secondary-color, #ffd700);
+        margin-bottom: 20px;
+    }
 }

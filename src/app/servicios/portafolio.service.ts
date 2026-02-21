@@ -94,7 +94,8 @@ private async procesarDocumento(res: any) {
     const pageHeight = doc.internal.pageSize.getHeight();
     
     const p = (res.perfil || []).find((item: any) => item.Idioma === this.Idioma) || {};
-    const experiencias = res.experiencia || [];
+    const experiencias = (res.experiencia || []).filter((item: any) => item.Idioma === this.Idioma);
+//    const experiencias = res.experiencia || [];
     const fotoUrl = res.foto && res.foto[0] ? res.foto[0].Archivo : null;
 
     // --- BLOQUE DE COORDENADAS FIJAS (ESTRUCTURA DE 3 COLUMNAS) ---
@@ -128,7 +129,7 @@ private async procesarDocumento(res: any) {
     doc.text("SOBRE MÍ", 20, 215);
 
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9); doc.setFont("helvetica", "normal");
+    doc.setFontSize(12); doc.setFont("helvetica", "bold");
     const sobreMiTexto = p.sobreMi || p.Descripcion || '';
     const sobreMiLines = doc.splitTextToSize(sobreMiTexto, 125);
     let ySobreMi = 235;
@@ -196,7 +197,7 @@ private async procesarDocumento(res: any) {
       let yL = rowY + (empLines.length * 12);
       doc.setFont("helvetica", "normal"); doc.setFontSize(9);
       doc.setTextColor(cGris[0], cGris[1], cGris[2]);
-      doc.text(exp.Ubicacion || '', COL2_X, yL);
+      doc.text(exp.UbicaEmpresa || '', COL2_X, yL);
       yL += 12;
       doc.text(exp.Fecha || '', COL2_X, yL);
 
@@ -208,16 +209,45 @@ private async procesarDocumento(res: any) {
       
       let yR = rowY + (cargoLines.length * 14);
 
-      if (exp.Asignacion) {
-        doc.setFontSize(10); doc.setFont("helvetica", "normal");
-        doc.text("Asignación:", COL3_X, yR);
-        yR += 13;
-        doc.setTextColor(cGris[0], cGris[1], cGris[2]);
-        const asigLines = doc.splitTextToSize(exp.Asignacion, WIDTH_COL3);
-        doc.text(asigLines, COL3_X, yR);
-        yR += (asigLines.length * 12) + 5;
-      }
+if (exp.Asignacion) {
+  doc.setFontSize(10); 
+  
+  // 1. Escribimos la etiqueta "Asignación:" en Negrita
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0); // Color negro para la etiqueta
+  const etiqueta = this.Idioma === 'English' ? "Assignment: " : "Asignación: ";
+  doc.text(etiqueta, COL3_X, yR);
 
+  // 2. Calculamos cuánto midió ese texto para desplazar el inicio del siguiente
+  const offset = doc.getTextWidth(etiqueta);
+
+  // 3. Escribimos el valor en Normal y Gris justo al lado
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(cGris[0], cGris[1], cGris[2]);
+  
+  // Ajustamos el ancho disponible restando el offset para que el texto respete el margen derecho
+  const asigLines = doc.splitTextToSize(exp.Asignacion, WIDTH_COL3 - offset);
+  doc.text(asigLines, COL3_X + offset, yR);
+
+  // 4. Actualizamos yR según cuántas líneas ocupó la asignación
+  yR += (asigLines.length * 12) + 5;
+}
+
+if (exp.Ubicacion && exp.Ubicacion.trim() !== "") {
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal"); // Sin negrita ya que es solo el dato
+  doc.setTextColor(cGris[0], cGris[1], cGris[2]); // Mantenemos el gris para coherencia
+  
+  // Usamos todo el ancho de la columna 3
+  const ubiLines = doc.splitTextToSize(exp.Ubicacion, WIDTH_COL3);
+  doc.text(ubiLines, COL3_X, yR);
+
+  // Bajamos yR según las líneas que ocupe la ubicación
+  yR += (ubiLines.length * 12) + 5;
+} else {
+  // Si no hay ubicación, espacio mínimo antes de logros
+  yR += 5;
+}
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.text("Logros:", COL3_X, yR);

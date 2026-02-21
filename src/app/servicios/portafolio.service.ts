@@ -71,10 +71,12 @@ export class PortafolioService {
       const perfilObs = this.dbPortfolio.list('/Perfil').valueChanges().pipe(first());
       const fotoObs = this.dbPortfolio.list('/Foto').valueChanges().pipe(first());
       const experienciaObs = this.dbPortfolio.list('/Experiencia').valueChanges().pipe(first());
+      const capacitacionesObs = this.dbPortfolio.list('/Capacitaciones').valueChanges().pipe(first());
       forkJoin({
         perfil: perfilObs,
         foto: fotoObs,
-        experiencia: experienciaObs
+        experiencia: experienciaObs,
+        capacitaciones: capacitacionesObs
       }).subscribe({
         next: (res: any) => {
           this.procesarDocumento(res);
@@ -93,10 +95,13 @@ private async procesarDocumento(res: any) {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     
+    // --- 1. FILTRADO ---
     const p = (res.perfil || []).find((item: any) => item.Idioma === this.Idioma) || {};
     const experiencias = (res.experiencia || []).filter((item: any) => item.Idioma === this.Idioma);
+    const capacitaciones = (res.capacitaciones || []).filter((item: any) => item.Idioma === this.Idioma);
     const fotoUrl = res.foto && res.foto[0] ? res.foto[0].Archivo : null;
 
+    // --- 2. CONFIGURACIÓN ---
     const COL1_W = 165; 
     const COL2_X = 185; 
     const COL3_X = 350; 
@@ -110,54 +115,45 @@ private async procesarDocumento(res: any) {
       doc.rect(0, 0, COL1_W, pageHeight, 'F');
     };
 
-    // PÁGINA 1
     dibujarSidebar();
 
+    // --- FOTO Y PERFIL ---
     if (fotoUrl) {
       try {
         const imgData = await this.getBase64ImageFromURL(fotoUrl);
         doc.addImage(imgData, 'JPEG', 17, 30, 130, 160);
       } catch (e) { console.error("Error foto"); }
     }
-
-    // Sobre Mí (Sidebar)
+    // (Resto de cabecera y sidebar igual para ahorrar espacio...)
     doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
     doc.setFontSize(12); doc.setFont("helvetica", "bold");
     doc.text(this.Idioma === 'English' ? "ABOUT ME" : "SOBRE MÍ", 20, 215);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9); doc.setFont("helvetica", "normal");
+    doc.setTextColor(255, 255, 255); doc.setFontSize(9); doc.setFont("helvetica", "normal");
     const sobreMiLines: string[] = doc.splitTextToSize(p.sobreMi || p.Descripcion || '', 125);
     let ySide = 235;
-    sobreMiLines.forEach((line: string) => { 
-      if(ySide < pageHeight - 40) { doc.text(line, 20, ySide, {align:'justify'}); ySide += 12; }
-    });
+    sobreMiLines.forEach((line: string) => { if(ySide < pageHeight - 40) { doc.text(line, 20, ySide, {align:'justify'}); ySide += 12; }});
 
-    // Header (Nombre y Título)
-    doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
-    doc.setFontSize(18); doc.setFont("helvetica", "bold");
+    // CABECERA NOMBRE
+    doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]); doc.setFontSize(18); doc.setFont("helvetica", "bold");
     const nomLines: string[] = doc.splitTextToSize((p.nombre || '').toUpperCase(), 200);
     doc.text(nomLines, COL2_X, 60);
     let yH = 65 + (nomLines.length * 18);
-    doc.setTextColor(cGris[0], cGris[1], cGris[2]);
-    doc.setFontSize(11); doc.setFont("helvetica", "normal");
+    doc.setTextColor(cGris[0], cGris[1], cGris[2]); doc.setFontSize(11); doc.setFont("helvetica", "normal");
     const funcLines: string[] = doc.splitTextToSize(p.funcion || '', 200);
     doc.text(funcLines, COL2_X, yH);
     yH += (funcLines.length * 14) + 5;
     doc.setFont("helvetica", "bold"); doc.text(p.titulo || '', COL2_X, yH);
 
-    // Contacto
-    let yC = 55;
-    doc.setFontSize(9); doc.setFont("helvetica", "normal");
+    // CONTACTO
+    let yC = 55; doc.setFontSize(9); doc.setFont("helvetica", "normal");
     const dL: string[] = doc.splitTextToSize(p.direccion || '', WIDTH_COL3);
     doc.text(dL, pageWidth - 30, yC, { align: 'right' });
     yC += (dL.length * 12) + 5;
-    doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
-    doc.text(p.telefono || '', pageWidth - 30, yC, { align: 'right' });
+    doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]); doc.text(p.telefono || '', pageWidth - 30, yC, { align: 'right' });
     yC += 15;
-    doc.setTextColor(cAzul[0], cAzul[1], cAzul[2]);
-    doc.text(p.email || '', pageWidth - 30, yC, { align: 'right' });
+    doc.setTextColor(cAzul[0], cAzul[1], cAzul[2]); doc.text(p.email || '', pageWidth - 30, yC, { align: 'right' });
 
-    // EXPERIENCIA
+     // EXPERIENCIA
     let currentY = 185;
     doc.setTextColor(0, 0, 0); doc.setFontSize(13); doc.setFont("helvetica", "bold");
     doc.text(this.Idioma === 'English' ? "WORK EXPERIENCE" : "EXPERIENCIA LABORAL", COL2_X, currentY - 8);
@@ -244,9 +240,47 @@ private async procesarDocumento(res: any) {
       }
     });
 
+    // --- CAPACITACIONES (COHERENCIA TOTAL) ---
+    if (capacitaciones.length > 0) {
+      currentY += 15;
+      if (currentY > pageHeight - 50) { doc.addPage(); dibujarSidebar(); currentY = 50; }
+
+      doc.setTextColor(0, 0, 0); doc.setFontSize(13); doc.setFont("helvetica", "bold");
+      doc.text("CAPACITACIONES", COL2_X, currentY - 8);
+      doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(1.5);
+      doc.line(COL2_X, currentY, pageWidth - 30, currentY);
+      currentY += 20;
+
+      capacitaciones.forEach((cap: any, index: number) => {
+        const lInst: string[] = doc.splitTextToSize(cap.Institucion || '', 150);
+        const lTit: string[] = doc.splitTextToSize(cap.Titulo || '', WIDTH_COL3);
+        const hCap = Math.max(lInst.length * 11 + 22, lTit.length * 13);
+
+        if (currentY + 20 > pageHeight - 35) { doc.addPage(); dibujarSidebar(); currentY = 50; }
+
+        const rowY = currentY;
+        doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
+        doc.text(lInst, COL2_X, rowY);
+        let yL = rowY + (lInst.length * 11);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
+        doc.text(cap.Ubicacion || '', COL2_X, yL); yL += 11;
+        doc.text(cap.Fecha || '', COL2_X, yL); yL += 11;
+
+        doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
+        doc.text(lTit, COL3_X, rowY);
+        let yR = rowY + (lTit.length * 13);
+
+        currentY = Math.max(yL, yR) + 10;
+        if (index < capacitaciones.length - 1) {
+          if (currentY > pageHeight - 30) { doc.addPage(); dibujarSidebar(); currentY = 50; }
+          doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(0.5);
+          doc.line(COL2_X, currentY, pageWidth - 30, currentY); currentY += 12;
+        }
+      });
+    }
+
     const blob = doc.output('blob');
     window.open(URL.createObjectURL(blob), '_blank');
-
   } catch (error) { console.error("Error PDF:", error); }
 }
 

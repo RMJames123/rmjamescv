@@ -95,15 +95,12 @@ private async procesarDocumento(res: any) {
     
     const p = (res.perfil || []).find((item: any) => item.Idioma === this.Idioma) || {};
     const experiencias = (res.experiencia || []).filter((item: any) => item.Idioma === this.Idioma);
-//    const experiencias = res.experiencia || [];
     const fotoUrl = res.foto && res.foto[0] ? res.foto[0].Archivo : null;
 
-    // --- BLOQUE DE COORDENADAS FIJAS (ESTRUCTURA DE 3 COLUMNAS) ---
     const COL1_W = 165; 
-    const COL2_X = 185; const COL2_W = 180; 
-    const COL3_X = 350; // Ajustado para que Cargo tenga buen espacio
+    const COL2_X = 185; 
+    const COL3_X = 350; 
     const WIDTH_COL3 = pageWidth - COL3_X - 30;
-
     const cAzul = [60, 94, 150];
     const cOcre = [184, 134, 11];
     const cGris = [100, 100, 100];
@@ -113,10 +110,9 @@ private async procesarDocumento(res: any) {
       doc.rect(0, 0, COL1_W, pageHeight, 'F');
     };
 
-    // --- PÁGINA 1 ---
+    // PÁGINA 1
     dibujarSidebar();
 
-    // 1. COLUMNA 1: FOTO Y "SOBRE MÍ" (DESCRIPCIÓN)
     if (fotoUrl) {
       try {
         const imgData = await this.getBase64ImageFromURL(fotoUrl);
@@ -124,162 +120,134 @@ private async procesarDocumento(res: any) {
       } catch (e) { console.error("Error foto"); }
     }
 
+    // Sobre Mí (Sidebar)
     doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
     doc.setFontSize(12); doc.setFont("helvetica", "bold");
-    doc.text("SOBRE MÍ", 20, 215);
-
+    doc.text(this.Idioma === 'English' ? "ABOUT ME" : "SOBRE MÍ", 20, 215);
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12); doc.setFont("helvetica", "bold");
-    const sobreMiTexto = p.sobreMi || p.Descripcion || '';
-    const sobreMiLines = doc.splitTextToSize(sobreMiTexto, 125);
-    let ySobreMi = 235;
-    sobreMiLines.forEach((line: string) => {
-      if (ySobreMi < pageHeight - 40) {
-        doc.text(line, 20, ySobreMi, { align: 'justify' });
-        ySobreMi += 12;
-      }
+    doc.setFontSize(9); doc.setFont("helvetica", "normal");
+    const sobreMiLines: string[] = doc.splitTextToSize(p.sobreMi || p.Descripcion || '', 125);
+    let ySide = 235;
+    sobreMiLines.forEach((line: string) => { 
+      if(ySide < pageHeight - 40) { doc.text(line, 20, ySide, {align:'justify'}); ySide += 12; }
     });
 
-    // 2. COLUMNA 2: CABECERA (FIJA)
+    // Header (Nombre y Título)
     doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
     doc.setFontSize(18); doc.setFont("helvetica", "bold");
-    const nombreLines = doc.splitTextToSize((p.nombre || '').toUpperCase(), 200);
-    doc.text(nombreLines, COL2_X, 60);
-
-    let yCol2Head = 65 + (nombreLines.length * 18);
+    const nomLines: string[] = doc.splitTextToSize((p.nombre || '').toUpperCase(), 200);
+    doc.text(nomLines, COL2_X, 60);
+    let yH = 65 + (nomLines.length * 18);
     doc.setTextColor(cGris[0], cGris[1], cGris[2]);
     doc.setFontSize(11); doc.setFont("helvetica", "normal");
-    const funcionLines = doc.splitTextToSize(p.funcion || '', 200);
-    doc.text(funcionLines, COL2_X, yCol2Head);
-    yCol2Head += (funcionLines.length * 14) + 5;
-    doc.setFont("helvetica", "bold");
-    doc.text(p.titulo || 'Ingeniero Industrial', COL2_X, yCol2Head);
+    const funcLines: string[] = doc.splitTextToSize(p.funcion || '', 200);
+    doc.text(funcLines, COL2_X, yH);
+    yH += (funcLines.length * 14) + 5;
+    doc.setFont("helvetica", "bold"); doc.text(p.titulo || '', COL2_X, yH);
 
-    // 3. COLUMNA 3: CONTACTO (FIJA)
-    let yContact = 55;
+    // Contacto
+    let yC = 55;
     doc.setFontSize(9); doc.setFont("helvetica", "normal");
-    doc.setTextColor(cGris[0], cGris[1], cGris[2]);
-    const dirLines = doc.splitTextToSize(p.direccion || '', pageWidth - COL3_X - 30);
-    doc.text(dirLines, pageWidth - 30, yContact, { align: 'right' });
-    yContact += (dirLines.length * 12) + 5;
+    const dL: string[] = doc.splitTextToSize(p.direccion || '', WIDTH_COL3);
+    doc.text(dL, pageWidth - 30, yC, { align: 'right' });
+    yC += (dL.length * 12) + 5;
     doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
-    doc.text(p.telefono || '', pageWidth - 30, yContact, { align: 'right' });
-    yContact += 15;
+    doc.text(p.telefono || '', pageWidth - 30, yC, { align: 'right' });
+    yC += 15;
     doc.setTextColor(cAzul[0], cAzul[1], cAzul[2]);
-    doc.text(p.email || '', pageWidth - 30, yContact, { align: 'right' });
+    doc.text(p.email || '', pageWidth - 30, yC, { align: 'right' });
 
-    // --- SECCIÓN: EXPERIENCIA LABORAL ---
+    // EXPERIENCIA
     let currentY = 185;
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(13); doc.setFont("helvetica", "bold");
-    doc.text("EXPERIENCIA LABORAL", COL2_X, currentY - 8);
-    doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]);
-    doc.setLineWidth(1.5);
+    doc.setTextColor(0, 0, 0); doc.setFontSize(13); doc.setFont("helvetica", "bold");
+    doc.text(this.Idioma === 'English' ? "WORK EXPERIENCE" : "EXPERIENCIA LABORAL", COL2_X, currentY - 8);
+    doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(1.5);
     doc.line(COL2_X, currentY, pageWidth - 30, currentY);
 
-    currentY += 30;
+    currentY += 20; // Espacio inicial reducido
 
     experiencias.forEach((exp: any, index: number) => {
-      if (currentY > pageHeight - 80) {
-        doc.addPage();
-        dibujarSidebar();
-        currentY = 50;
+      // Solo saltamos si no queda espacio ni para el nombre de la empresa
+      if (currentY > pageHeight - 50) {
+        doc.addPage(); dibujarSidebar(); currentY = 50;
       }
 
       const rowY = currentY;
 
-      // COLUMNA 2: EMPRESA
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("helvetica", "bold"); doc.setFontSize(10);
-      const empLines = doc.splitTextToSize((exp.Empresa || '').toUpperCase(), 150);
-      doc.text(empLines, COL2_X, rowY);
-      
-      let yL = rowY + (empLines.length * 12);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-      doc.setTextColor(cGris[0], cGris[1], cGris[2]);
-      doc.text(exp.UbicaEmpresa || '', COL2_X, yL);
-      yL += 12;
+      // Empresa y Fecha
+      doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
+      const linesEmp: string[] = doc.splitTextToSize((exp.Empresa || '').toUpperCase(), 150);
+      doc.text(linesEmp, COL2_X, rowY);
+      let yL = rowY + (linesEmp.length * 11);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
       doc.text(exp.Fecha || '', COL2_X, yL);
+      yL += 11;
 
-      // COLUMNA 3: CARGO Y LOGROS (Alineados al rowY de la empresa)
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("helvetica", "bold"); doc.setFontSize(11);
-      const cargoLines = doc.splitTextToSize(exp.Cargo || exp.Puesto || '', WIDTH_COL3);
-      doc.text(cargoLines, COL3_X, rowY);
-      
-      let yR = rowY + (cargoLines.length * 14);
+      // Cargo
+      let yR = rowY;
+      doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
+      const linesCargo: string[] = doc.splitTextToSize(exp.Cargo || '', WIDTH_COL3);
+      doc.text(linesCargo, COL3_X, yR);
+      yR += (linesCargo.length * 13);
 
-if (exp.Asignacion) {
-  doc.setFontSize(10); 
-  
-  // 1. Escribimos la etiqueta "Asignación:" en Negrita
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0); // Color negro para la etiqueta
-  const etiqueta = this.Idioma === 'English' ? "Assignment: " : "Asignación: ";
-  doc.text(etiqueta, COL3_X, yR);
+      // Asignación y Ubicación
+      if (exp.Ubicacion && exp.Ubicacion.trim() !== "") {
+        if (exp.Asignacion && exp.Asignacion.trim() !== "") {
+          doc.setFontSize(9.5); doc.setFont("helvetica", "bold");
+          const etiq = this.Idioma === 'English' ? "Assignment: " : "Asignación: ";
+          doc.text(etiq, COL3_X, yR);
+          const off = doc.getTextWidth(etiq);
+          doc.setFont("helvetica", "normal"); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
+          const aT: string[] = doc.splitTextToSize(exp.Asignacion, WIDTH_COL3 - off);
+          doc.text(aT, COL3_X + off, yR);
+          yR += (aT.length * 11) + 2;
+        }
+        doc.setFontSize(9.5); doc.setFont("helvetica", "normal"); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
+        const uT: string[] = doc.splitTextToSize(exp.Ubicacion, WIDTH_COL3);
+        doc.text(uT, COL3_X, yR);
+        yR += (uT.length * 11) + 5;
+      }
 
-  // 2. Calculamos cuánto midió ese texto para desplazar el inicio del siguiente
-  const offset = doc.getTextWidth(etiqueta);
+      // Logros
+      doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(9.5);
+      doc.text(this.Idioma === 'English' ? "Key Achievements:" : "Logros:", COL3_X, yR);
+      yR += 12;
 
-  // 3. Escribimos el valor en Normal y Gris justo al lado
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(cGris[0], cGris[1], cGris[2]);
-  
-  // Ajustamos el ancho disponible restando el offset para que el texto respete el margen derecho
-  const asigLines = doc.splitTextToSize(exp.Asignacion, WIDTH_COL3 - offset);
-  doc.text(asigLines, COL3_X + offset, yR);
-
-  // 4. Actualizamos yR según cuántas líneas ocupó la asignación
-  yR += (asigLines.length * 12) + 5;
-}
-
-if (exp.Ubicacion && exp.Ubicacion.trim() !== "") {
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal"); // Sin negrita ya que es solo el dato
-  doc.setTextColor(cGris[0], cGris[1], cGris[2]); // Mantenemos el gris para coherencia
-  
-  // Usamos todo el ancho de la columna 3
-  const ubiLines = doc.splitTextToSize(exp.Ubicacion, WIDTH_COL3);
-  doc.text(ubiLines, COL3_X, yR);
-
-  // Bajamos yR según las líneas que ocupe la ubicación
-  yR += (ubiLines.length * 12) + 5;
-} else {
-  // Si no hay ubicación, espacio mínimo antes de logros
-  yR += 5;
-}
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.text("Logros:", COL3_X, yR);
-      yR += 14;
-
-      doc.setFont("helvetica", "normal");
       const logros = exp.Logros || [];
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9);
       logros.forEach((log: any) => {
-        const lineasLogro = doc.splitTextToSize(log.Descripcion || '', WIDTH_COL3 - 15);
-        if (yR + (lineasLogro.length * 11) > pageHeight - 50) {
+        const dLog: string[] = doc.splitTextToSize(log.Descripcion || '', WIDTH_COL3 - 15);
+        const hLog = (dLog.length * 10.5) + 3;
+
+        // SALTO INDIVIDUAL POR LOGRO
+        if (yR + hLog > pageHeight - 35) {
           doc.addPage(); dibujarSidebar(); yR = 50;
+          doc.setFontSize(8); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
+          doc.text(`(${exp.Empresa} - cont.)`, COL3_X, yR - 10);
+          doc.setFontSize(9); doc.setTextColor(0, 0, 0);
         }
         doc.text("•", COL3_X + 5, yR);
-        doc.text(lineasLogro, COL3_X + 15, yR);
-        yR += (lineasLogro.length * 11) + 4;
+        doc.text(dLog, COL3_X + 15, yR);
+        yR += hLog;
       });
 
-      // --- DIBUJO DE LA LÍNEA DIVISORIA (EXCEPTO EN EL ÚLTIMO REGISTRO) ---
-      currentY = Math.max(yL, yR) + 15;
+      // Calculamos el final de esta experiencia
+      currentY = Math.max(yL, yR) + 8; // Margen entre empresas reducido
       
+      // Línea divisoria ocre
       if (index < experiencias.length - 1) {
-        doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]);
-        doc.setLineWidth(0.5); // Línea más delgada
+        // Si la línea va a quedar huérfana al final, saltamos página
+        if (currentY > pageHeight - 30) { doc.addPage(); dibujarSidebar(); currentY = 50; }
+        doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(0.5);
         doc.line(COL2_X, currentY, pageWidth - 30, currentY);
-        currentY += 20; // Espacio después de la línea
+        currentY += 12; // Espacio post-línea reducido
       }
     });
 
-    window.open(URL.createObjectURL(doc.output('blob')), '_blank');
-  } catch (error) {
-    console.error("Error en PDF:", error);
-  }
+    const blob = doc.output('blob');
+    window.open(URL.createObjectURL(blob), '_blank');
+
+  } catch (error) { console.error("Error PDF:", error); }
 }
 
 private async getBase64ImageFromURL(url: string): Promise<string> {

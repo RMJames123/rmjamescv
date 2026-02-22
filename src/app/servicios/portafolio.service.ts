@@ -1,7 +1,7 @@
 import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core'; 
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
-import { take, catchError, map, first } from 'rxjs/operators';
+import { catchError, map, first } from 'rxjs/operators';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { LanguageService } from './language.service';
 import jsPDF from 'jspdf';
@@ -29,6 +29,7 @@ export class PortafolioService {
     );
   }
 
+  // --- MÉTODOS DE CARGA DE DATOS ---
   CargarPerfil(): Observable<any> { return this.getData('/Perfil'); }
   CargarFoto(): Observable<any> { return this.dbPortfolio.list('/Foto').valueChanges(); }
   CargarIdiomas(): Observable<any> { return this.http.get('https://rm-portafolio-default-rtdb.firebaseio.com/Idiomas.json'); }
@@ -40,7 +41,10 @@ export class PortafolioService {
   CargarTestimonios(): Observable<any> { return this.getData('/Testimonios'); }
   CargarContacto(): Observable<any> { return this.getData('/Contacto'); }
   CargarIconos(): Observable<any> { return this.dbPortfolio.list('/Iconos').valueChanges(); }
+  CargarLinks(): Observable<any> { return this.dbPortfolio.list('/Links').valueChanges(); }
 
+
+  // --- MÉTODOS DE TÍTULOS (RESTAURADOS) ---
   private getMenuByBtnLang(btnLangKey: string): Observable<any> {
     const strBtnLang = `#${btnLangKey}_${this.Idioma}`;
     return this.dbPortfolio.list('/Menu').valueChanges().pipe(
@@ -56,6 +60,7 @@ export class PortafolioService {
   TituloContacto(): Observable<any> { return this.getMenuByBtnLang('contact'); }
   TituloEducacion(): Observable<any> { return this.getMenuByBtnLang('education'); }
 
+  // --- LÓGICA DE PDF ---
   generarPDF() {
     Swal.fire({
       title: this.Idioma === 'English' ? 'Generating CV...' : 'Generando CV...',
@@ -70,8 +75,9 @@ export class PortafolioService {
       const experienciaObs = this.dbPortfolio.list('/Experiencia').valueChanges().pipe(first());
       const capacitacionesObs = this.dbPortfolio.list('/Capacitaciones').valueChanges().pipe(first());
       const educacionObs = this.dbPortfolio.list('/Educacion').valueChanges().pipe(first());
-      const menuObs = this.dbPortfolio.list('/Menu').valueChanges().pipe(first()); // <-- NUEVO
-      const skillObs = this.dbPortfolio.list('/Skill').valueChanges().pipe(first()); // <-- NUEVO
+      const menuObs = this.dbPortfolio.list('/Menu').valueChanges().pipe(first());
+      const skillObs = this.dbPortfolio.list('/Skill').valueChanges().pipe(first());
+      const enlacesObs = this.dbPortfolio.list('/Links').valueChanges().pipe(first());
 
       forkJoin({
         perfil: perfilObs,
@@ -79,14 +85,15 @@ export class PortafolioService {
         experiencia: experienciaObs,
         capacitaciones: capacitacionesObs,
         educacion: educacionObs,
-        menu: menuObs, // <-- NUEVO
-        skill: skillObs  // <-- NUEVO
+        menu: menuObs,
+        skill: skillObs,
+        enlaces: enlacesObs
       }).subscribe({
         next: async (res: any) => {
           await this.procesarDocumento(res);
           Swal.close();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error("Error en flujo:", err);
           Swal.fire('Error', 'Fallo de conexión con Firebase', 'error');
         }
@@ -94,7 +101,7 @@ export class PortafolioService {
     });
   }
 
-private async procesarDocumento(res: any) {
+  private async procesarDocumento(res: any) {
     try {
       const doc = new jsPDF('p', 'pt', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -107,12 +114,11 @@ private async procesarDocumento(res: any) {
       };
       
       const p = (res.perfil || []).find((item: any) => item.Idioma === this.Idioma) || {};
-      
       const experiencias = (res.experiencia || []).filter((item: any) => item.Idioma === this.Idioma).reverse();
       const capacitaciones = (res.capacitaciones || []).filter((item: any) => item.Idioma === this.Idioma).reverse();
       const educacion = (res.educacion || []).filter((item: any) => item.Idioma === this.Idioma).reverse();
-      // Filtrado de Skills por idioma
       const skills = (res.skill || []).filter((item: any) => item.Idioma === this.Idioma);
+      const enlaces = (res.enlaces || []).filter((item: any) => item.Idioma === this.Idioma);
 
       const fotoUrl = res.foto && res.foto[0] ? res.foto[0].Archivo : null;
       const COL1_W = 165, COL2_X = 185, COL3_X = 350; 
@@ -146,32 +152,58 @@ private async procesarDocumento(res: any) {
         if(ySide < pageHeight - 40) { doc.text(line, 20, ySide, {align:'justify'}); ySide += 12; }
       });
 
-      // --- SECCIÓN: SKILLS (NUEVA) ---
-      ySide += 25; // Espacio después de Sobre Mí
+      // LÍNEA DIVISORIA 1: TRAS SOBRE MÍ
+      ySide += 8;
+      doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(0.5);
+      doc.line(20, ySide, COL1_W - 20, ySide);
+      ySide += 22;
 
+      // --- SECCIÓN: SKILLS ---
       if (skills.length > 0) {
         doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
         doc.setFontSize(12); doc.setFont("helvetica", "bold");
         doc.text(getT('skills', 'SKILLS'), 20, ySide);
         ySide += 15;
-
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(9); doc.setFont("helvetica", "normal");
-        
         skills.forEach((sk: any) => {
-          // Usamos splitTextToSize para que el Nombre no se corte
           const skLines = doc.splitTextToSize(sk.Nombre || '', 125);
           skLines.forEach((line: string) => {
-            if(ySide < pageHeight - 20) {
-              doc.text(line, 20, ySide);
-              ySide += 11;
-            }
+            if(ySide < pageHeight - 20) { doc.text(line, 20, ySide); ySide += 11; }
           });
-          ySide += 4; // Pequeño margen entre cada habilidad
+          ySide += 4;
+        });
+
+        // LÍNEA DIVISORIA 2: TRAS SKILLS
+        ySide += 6;
+        doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(0.5);
+        doc.line(20, ySide, COL1_W - 20, ySide);
+        ySide += 22;
+      }
+
+      // --- SECCIÓN: ENLACES ---
+      if (enlaces.length > 0) {
+        doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
+        doc.setFontSize(12); doc.setFont("helvetica", "bold");
+        doc.text(this.Idioma === 'English' ? 'LINKS' : 'ENLACES', 20, ySide);
+        ySide += 15;
+
+        enlaces.forEach((en: any) => {
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(9); doc.setFont("helvetica", "bold");
+          doc.text(en.Descripcion || '', 20, ySide);
+          ySide += 12;
+          
+          doc.setTextColor(173, 216, 230);
+          doc.setFont("helvetica", "normal");
+          const linkTxt = en.Enlace || '';
+          doc.text(linkTxt, 20, ySide);
+          doc.link(20, ySide - 8, 125, 10, { url: linkTxt });
+          ySide += 18;
         });
       }
 
-      // --- HEADER Y CONTACTO (Derecha e izquierda superior) ---
+      // --- HEADER Y CONTACTO (COLUMNA DERECHA) ---
       doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
       doc.setFontSize(18); doc.setFont("helvetica", "bold");
       const nomLines = doc.splitTextToSize((p.nombre || '').toUpperCase(), 200);
@@ -206,9 +238,7 @@ private async procesarDocumento(res: any) {
       experiencias.forEach((exp: any, index: number) => {
         if (currentY > pageHeight - 60) { doc.addPage(); dibujarSidebar(); currentY = 50; }
         const startY = currentY;
-        let leftY = startY;
-        let rightY = startY;
-
+        let leftY = startY, rightY = startY;
         doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
         const linesEmp = doc.splitTextToSize((exp.Empresa || '').toUpperCase(), WIDTH_COL2);
         doc.text(linesEmp, COL2_X, leftY);
@@ -216,12 +246,10 @@ private async procesarDocumento(res: any) {
         doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
         doc.text(exp.Fecha || '', COL2_X, leftY);
         leftY += 12;
-
         doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
         const linesCargo = doc.splitTextToSize(exp.Cargo || '', WIDTH_COL3);
         doc.text(linesCargo, COL3_X, rightY);
         rightY += (linesCargo.length * 13);
-
         if (exp.Ubicacion || exp.Asignacion) {
           doc.setFontSize(9.5); doc.setFont("helvetica", "normal"); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
           const uText = (exp.Asignacion ? exp.Asignacion + ' - ' : '') + (exp.Ubicacion || '');
@@ -229,24 +257,18 @@ private async procesarDocumento(res: any) {
           doc.text(linesUbi, COL3_X, rightY);
           rightY += (linesUbi.length * 11) + 5;
         }
-
         doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(9.5);
         doc.text(this.Idioma === 'English' ? "Achievements:" : "Logros:", COL3_X, rightY);
         rightY += 12;
-
         const logros = exp.Logros || [];
         doc.setFont("helvetica", "normal"); doc.setFontSize(9);
         logros.forEach((log: any) => {
           const dLog = doc.splitTextToSize(log.Descripcion || '', WIDTH_COL3 - 15);
           const hLog = (dLog.length * 10.5) + 3;
-          if (rightY + hLog > pageHeight - 35) {
-            doc.addPage(); dibujarSidebar(); 
-            rightY = 50; leftY = 50; 
-          }
+          if (rightY + hLog > pageHeight - 35) { doc.addPage(); dibujarSidebar(); rightY = 50; leftY = 50; }
           doc.text("•", COL3_X + 5, rightY); doc.text(dLog, COL3_X + 15, rightY);
           rightY += hLog;
         });
-
         const puntoMasBajo = Math.max(leftY, rightY);
         if (index < experiencias.length - 1) {
           const yLinea = puntoMasBajo + 8;
@@ -259,53 +281,40 @@ private async procesarDocumento(res: any) {
         } else { currentY = puntoMasBajo + 15; }
       });
 
-      // --- SECCIONES FINALES ---
+      // --- SECCIONES FINALES (CAPACITACIONES Y EDUCACIÓN) ---
       const dibujarSeccionCompleta = (titulo: string, data: any[]) => {
         if (data.length === 0) return;
         if (currentY > pageHeight - 80) { doc.addPage(); dibujarSidebar(); currentY = 50; }
         else { currentY += 20; }
-
         doc.setTextColor(0, 0, 0); doc.setFontSize(13); doc.setFont("helvetica", "bold");
         doc.text(titulo, COL2_X, currentY - 8);
         doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(1.5);
         doc.line(COL2_X, currentY, pageWidth - 30, currentY);
         currentY += 20;
-
         data.forEach((item, idx) => {
           if (currentY > pageHeight - 60) { doc.addPage(); dibujarSidebar(); currentY = 50; }
-          
-          const sY = currentY;
-          let lY = sY;
-          let rY = sY;
-
+          const sY = currentY, lY = sY, rY = sY;
           doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
           const lIns = doc.splitTextToSize((item.Institucion || '').toUpperCase(), WIDTH_COL2);
           doc.text(lIns, COL2_X, lY);
-          lY += (lIns.length * 11);
-
+          let nLY = lY + (lIns.length * 11);
           doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
           if (item.Ubicacion) {
             const lUbi = doc.splitTextToSize(item.Ubicacion, WIDTH_COL2);
-            doc.text(lUbi, COL2_X, lY);
-            lY += (lUbi.length * 11);
+            doc.text(lUbi, COL2_X, nLY); nLY += (lUbi.length * 11);
           }
-          doc.text(item.Fecha || '', COL2_X, lY);
-          lY += 12;
-
+          doc.text(item.Fecha || '', COL2_X, nLY); nLY += 12;
           doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(0, 0, 0);
           const lTit = doc.splitTextToSize(item.Titulo || '', WIDTH_COL3);
           doc.text(lTit, COL3_X, rY);
-          rY += (lTit.length * 12) + 5;
-
-          const puntoFinal = Math.max(lY, rY);
-          
+          let nRY = rY + (lTit.length * 12) + 5;
+          const puntoFinal = Math.max(nLY, nRY);
           if (idx < data.length - 1) {
             const yL = puntoFinal + 8;
             if (yL > pageHeight - 20) { doc.addPage(); dibujarSidebar(); currentY = 50; }
             else {
               doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(0.5);
-              doc.line(COL2_X, yL, pageWidth - 30, yL);
-              currentY = yL + 12;
+              doc.line(COL2_X, yL, pageWidth - 30, yL); currentY = yL + 12;
             }
           } else { currentY = puntoFinal + 10; }
         });

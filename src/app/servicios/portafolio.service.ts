@@ -145,7 +145,7 @@ export class PortafolioService {
       doc.text(getT('profile', 'SOBRE MÍ'), 20, 215);
       
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9); doc.setFont("helvetica", "normal");
+      doc.setFontSize(9); doc.setFont("helvetica", "bold");
       const sobreMiLines = doc.splitTextToSize(p.sobreMi || p.Descripcion || '', 125);
       let ySide = 235;
       sobreMiLines.forEach((line: string) => { 
@@ -165,7 +165,7 @@ export class PortafolioService {
         doc.text(getT('skills', 'SKILLS'), 20, ySide);
         ySide += 15;
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(9); doc.setFont("helvetica", "normal");
+        doc.setFontSize(9); doc.setFont("helvetica", "bold");
         skills.forEach((sk: any) => {
           const skLines = doc.splitTextToSize(sk.Nombre || '', 125);
           skLines.forEach((line: string) => {
@@ -181,7 +181,7 @@ export class PortafolioService {
         ySide += 22;
       }
 
-      // --- SECCIÓN: ENLACES ---
+ // --- SECCIÓN: ENLACES (CORREGIDA PARA EVITAR DESBORDE) ---
       if (enlaces.length > 0) {
         doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
         doc.setFontSize(12); doc.setFont("helvetica", "bold");
@@ -189,17 +189,29 @@ export class PortafolioService {
         ySide += 15;
 
         enlaces.forEach((en: any) => {
+          // Título del enlace (Página Web, LinkedIn, etc.)
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(9); doc.setFont("helvetica", "bold");
           doc.text(en.Descripcion || '', 20, ySide);
           ySide += 12;
           
+          // Texto del enlace con ajuste de línea
           doc.setTextColor(173, 216, 230);
-          doc.setFont("helvetica", "normal");
+          doc.setFont("helvetica", "bold");
+          
           const linkTxt = en.Enlace || '';
-          doc.text(linkTxt, 20, ySide);
-          doc.link(20, ySide - 8, 125, 10, { url: linkTxt });
-          ySide += 18;
+          // Forzamos a que el texto no supere los 125 puntos de ancho
+          const linkLines = doc.splitTextToSize(linkTxt, 125); 
+          
+          linkLines.forEach((line: string) => {
+            if (ySide < pageHeight - 20) {
+              doc.text(line, 20, ySide);
+              // Hacemos que CADA línea sea un link clicable
+              doc.link(20, ySide - 8, 125, 10, { url: linkTxt });
+              ySide += 11;
+            }
+          });
+          ySide += 7; // Espacio entre diferentes enlaces
         });
       }
 

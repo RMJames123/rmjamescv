@@ -71,6 +71,7 @@ export class PortafolioService {
       const capacitacionesObs = this.dbPortfolio.list('/Capacitaciones').valueChanges().pipe(first());
       const educacionObs = this.dbPortfolio.list('/Educacion').valueChanges().pipe(first());
       const menuObs = this.dbPortfolio.list('/Menu').valueChanges().pipe(first()); // <-- NUEVO
+      const skillObs = this.dbPortfolio.list('/Skill').valueChanges().pipe(first()); // <-- NUEVO
 
       forkJoin({
         perfil: perfilObs,
@@ -78,7 +79,8 @@ export class PortafolioService {
         experiencia: experienciaObs,
         capacitaciones: capacitacionesObs,
         educacion: educacionObs,
-        menu: menuObs // <-- NUEVO
+        menu: menuObs, // <-- NUEVO
+        skill: skillObs  // <-- NUEVO
       }).subscribe({
         next: async (res: any) => {
           await this.procesarDocumento(res);
@@ -109,7 +111,9 @@ private async procesarDocumento(res: any) {
       const experiencias = (res.experiencia || []).filter((item: any) => item.Idioma === this.Idioma).reverse();
       const capacitaciones = (res.capacitaciones || []).filter((item: any) => item.Idioma === this.Idioma).reverse();
       const educacion = (res.educacion || []).filter((item: any) => item.Idioma === this.Idioma).reverse();
-      
+      // Filtrado de Skills por idioma
+      const skills = (res.skill || []).filter((item: any) => item.Idioma === this.Idioma);
+
       const fotoUrl = res.foto && res.foto[0] ? res.foto[0].Archivo : null;
       const COL1_W = 165, COL2_X = 185, COL3_X = 350; 
       const WIDTH_COL2 = 150, WIDTH_COL3 = pageWidth - COL3_X - 30;
@@ -129,10 +133,11 @@ private async procesarDocumento(res: any) {
         } catch (e) { console.error("Error foto"); }
       }
 
-      // --- SOBRE MÍ, HEADER Y CONTACTO (Se mantiene igual) ---
+      // --- SECCIÓN: SOBRE MÍ ---
       doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
       doc.setFontSize(12); doc.setFont("helvetica", "bold");
       doc.text(getT('profile', 'SOBRE MÍ'), 20, 215);
+      
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(9); doc.setFont("helvetica", "normal");
       const sobreMiLines = doc.splitTextToSize(p.sobreMi || p.Descripcion || '', 125);
@@ -141,6 +146,32 @@ private async procesarDocumento(res: any) {
         if(ySide < pageHeight - 40) { doc.text(line, 20, ySide, {align:'justify'}); ySide += 12; }
       });
 
+      // --- SECCIÓN: SKILLS (NUEVA) ---
+      ySide += 25; // Espacio después de Sobre Mí
+
+      if (skills.length > 0) {
+        doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
+        doc.setFontSize(12); doc.setFont("helvetica", "bold");
+        doc.text(getT('skills', 'SKILLS'), 20, ySide);
+        ySide += 15;
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9); doc.setFont("helvetica", "normal");
+        
+        skills.forEach((sk: any) => {
+          // Usamos splitTextToSize para que el Nombre no se corte
+          const skLines = doc.splitTextToSize(sk.Nombre || '', 125);
+          skLines.forEach((line: string) => {
+            if(ySide < pageHeight - 20) {
+              doc.text(line, 20, ySide);
+              ySide += 11;
+            }
+          });
+          ySide += 4; // Pequeño margen entre cada habilidad
+        });
+      }
+
+      // --- HEADER Y CONTACTO (Derecha e izquierda superior) ---
       doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
       doc.setFontSize(18); doc.setFont("helvetica", "bold");
       const nomLines = doc.splitTextToSize((p.nombre || '').toUpperCase(), 200);
@@ -164,7 +195,7 @@ private async procesarDocumento(res: any) {
       doc.setTextColor(cAzul[0], cAzul[1], cAzul[2]);
       doc.text(p.email || '', pageWidth - 30, yC, { align: 'right' });
 
-      // --- EXPERIENCIA LABORAL (Logrado e Intacto) ---
+      // --- EXPERIENCIA LABORAL ---
       let currentY = 185;
       doc.setTextColor(0, 0, 0); doc.setFontSize(13); doc.setFont("helvetica", "bold");
       doc.text(getT('experience', 'EXPERIENCIA LABORAL'), COL2_X, currentY - 8);
@@ -228,7 +259,7 @@ private async procesarDocumento(res: any) {
         } else { currentY = puntoMasBajo + 15; }
       });
 
-      // --- SECCIONES FINALES CON UBICACIÓN Y FECHA (NUEVO AJUSTE) ---
+      // --- SECCIONES FINALES ---
       const dibujarSeccionCompleta = (titulo: string, data: any[]) => {
         if (data.length === 0) return;
         if (currentY > pageHeight - 80) { doc.addPage(); dibujarSidebar(); currentY = 50; }
@@ -247,7 +278,6 @@ private async procesarDocumento(res: any) {
           let lY = sY;
           let rY = sY;
 
-          // Columna Izquierda: Institución (Negrita) + Ubicación (Gris) + Fecha (Gris)
           doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0);
           const lIns = doc.splitTextToSize((item.Institucion || '').toUpperCase(), WIDTH_COL2);
           doc.text(lIns, COL2_X, lY);
@@ -262,13 +292,11 @@ private async procesarDocumento(res: any) {
           doc.text(item.Fecha || '', COL2_X, lY);
           lY += 12;
 
-          // Columna Derecha: Título (Negrita)
           doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(0, 0, 0);
           const lTit = doc.splitTextToSize(item.Titulo || '', WIDTH_COL3);
           doc.text(lTit, COL3_X, rY);
           rY += (lTit.length * 12) + 5;
 
-          // Suelo dinámico y línea divisoria
           const puntoFinal = Math.max(lY, rY);
           
           if (idx < data.length - 1) {
@@ -290,7 +318,7 @@ private async procesarDocumento(res: any) {
       window.open(URL.createObjectURL(blob), '_blank');
     } catch (error) { console.error("Error PDF:", error); }
   }
-  
+
   private async getBase64ImageFromURL(url: string): Promise<string> {
     const res = await fetch(url);
     const blob = await res.blob();

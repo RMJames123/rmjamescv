@@ -101,7 +101,7 @@ export class PortafolioService {
     });
   }
 
-  private async procesarDocumento(res: any) {
+private async procesarDocumento(res: any) {
     try {
       const doc = new jsPDF('p', 'pt', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -152,7 +152,6 @@ export class PortafolioService {
         if(ySide < pageHeight - 40) { doc.text(line, 20, ySide, {align:'justify'}); ySide += 12; }
       });
 
-      // LÍNEA DIVISORIA 1: TRAS SOBRE MÍ
       ySide += 8;
       doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(0.5);
       doc.line(20, ySide, COL1_W - 20, ySide);
@@ -174,14 +173,13 @@ export class PortafolioService {
           ySide += 4;
         });
 
-        // LÍNEA DIVISORIA 2: TRAS SKILLS
         ySide += 6;
         doc.setDrawColor(cOcre[0], cOcre[1], cOcre[2]); doc.setLineWidth(0.5);
         doc.line(20, ySide, COL1_W - 20, ySide);
         ySide += 22;
       }
 
- // --- SECCIÓN: ENLACES (CORREGIDA PARA EVITAR DESBORDE) ---
+      // --- SECCIÓN: ENLACES ---
       if (enlaces.length > 0) {
         doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
         doc.setFontSize(12); doc.setFont("helvetica", "bold");
@@ -189,33 +187,26 @@ export class PortafolioService {
         ySide += 15;
 
         enlaces.forEach((en: any) => {
-          // Título del enlace (Página Web, LinkedIn, etc.)
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(9); doc.setFont("helvetica", "bold");
           doc.text(en.Descripcion || '', 20, ySide);
           ySide += 12;
-          
-          // Texto del enlace con ajuste de línea
           doc.setTextColor(173, 216, 230);
           doc.setFont("helvetica", "bold");
-          
           const linkTxt = en.Enlace || '';
-          // Forzamos a que el texto no supere los 125 puntos de ancho
           const linkLines = doc.splitTextToSize(linkTxt, 125); 
-          
           linkLines.forEach((line: string) => {
             if (ySide < pageHeight - 20) {
               doc.text(line, 20, ySide);
-              // Hacemos que CADA línea sea un link clicable
               doc.link(20, ySide - 8, 125, 10, { url: linkTxt });
               ySide += 11;
             }
           });
-          ySide += 7; // Espacio entre diferentes enlaces
+          ySide += 7;
         });
       }
 
-      // --- HEADER Y CONTACTO (COLUMNA DERECHA) ---
+      // --- HEADER Y CONTACTO ---
       doc.setTextColor(cOcre[0], cOcre[1], cOcre[2]);
       doc.setFontSize(18); doc.setFont("helvetica", "bold");
       const nomLines = doc.splitTextToSize((p.nombre || '').toUpperCase(), 200);
@@ -239,7 +230,7 @@ export class PortafolioService {
       doc.setTextColor(cAzul[0], cAzul[1], cAzul[2]);
       doc.text(p.email || '', pageWidth - 30, yC, { align: 'right' });
 
-      // --- EXPERIENCIA LABORAL ---
+      // --- EXPERIENCIA LABORAL (MODIFICADA) ---
       let currentY = 185;
       doc.setTextColor(0, 0, 0); doc.setFontSize(13); doc.setFont("helvetica", "bold");
       doc.text(getT('experience', 'EXPERIENCIA LABORAL'), COL2_X, currentY - 8);
@@ -251,17 +242,32 @@ export class PortafolioService {
         if (currentY > pageHeight - 60) { doc.addPage(); dibujarSidebar(); currentY = 50; }
         const startY = currentY;
         let leftY = startY, rightY = startY;
+
+        // Empresa
         doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
         const linesEmp = doc.splitTextToSize((exp.Empresa || '').toUpperCase(), WIDTH_COL2);
         doc.text(linesEmp, COL2_X, leftY);
         leftY += (linesEmp.length * 11);
+
+        // --- INCLUSIÓN DE UBICAEMP ---
+        if (exp.UbicaEmpresa) {
+          doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
+          const linesUbica = doc.splitTextToSize(exp.UbicaEmpresa, WIDTH_COL2);
+          doc.text(linesUbica, COL2_X, leftY);
+          leftY += (linesUbica.length * 10) + 2;
+        }
+
+        // Fecha
         doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
         doc.text(exp.Fecha || '', COL2_X, leftY);
         leftY += 12;
+
+        // Cargo (Columna Derecha)
         doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
         const linesCargo = doc.splitTextToSize(exp.Cargo || '', WIDTH_COL3);
         doc.text(linesCargo, COL3_X, rightY);
         rightY += (linesCargo.length * 13);
+
         if (exp.Ubicacion || exp.Asignacion) {
           doc.setFontSize(9.5); doc.setFont("helvetica", "normal"); doc.setTextColor(cGris[0], cGris[1], cGris[2]);
           const uText = (exp.Asignacion ? exp.Asignacion + ' - ' : '') + (exp.Ubicacion || '');
@@ -269,9 +275,11 @@ export class PortafolioService {
           doc.text(linesUbi, COL3_X, rightY);
           rightY += (linesUbi.length * 11) + 5;
         }
+
         doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.setFontSize(9.5);
-        doc.text(this.Idioma === 'English' ? "Achievements:" : "Logros:", COL3_X, rightY);
+        doc.text(exp.LogrosEtiqueta, COL3_X, rightY);
         rightY += 12;
+
         const logros = exp.Logros || [];
         doc.setFont("helvetica", "normal"); doc.setFontSize(9);
         logros.forEach((log: any) => {
@@ -281,6 +289,7 @@ export class PortafolioService {
           doc.text("•", COL3_X + 5, rightY); doc.text(dLog, COL3_X + 15, rightY);
           rightY += hLog;
         });
+
         const puntoMasBajo = Math.max(leftY, rightY);
         if (index < experiencias.length - 1) {
           const yLinea = puntoMasBajo + 8;
@@ -293,7 +302,7 @@ export class PortafolioService {
         } else { currentY = puntoMasBajo + 15; }
       });
 
-      // --- SECCIONES FINALES (CAPACITACIONES Y EDUCACIÓN) ---
+      // --- SECCIONES FINALES ---
       const dibujarSeccionCompleta = (titulo: string, data: any[]) => {
         if (data.length === 0) return;
         if (currentY > pageHeight - 80) { doc.addPage(); dibujarSidebar(); currentY = 50; }
@@ -339,7 +348,7 @@ export class PortafolioService {
       window.open(URL.createObjectURL(blob), '_blank');
     } catch (error) { console.error("Error PDF:", error); }
   }
-
+  
   private async getBase64ImageFromURL(url: string): Promise<string> {
     const res = await fetch(url);
     const blob = await res.blob();

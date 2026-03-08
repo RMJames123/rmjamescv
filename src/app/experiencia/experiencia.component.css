@@ -89,11 +89,18 @@
     opacity: 0.9;
 }
 
+.experience-ubicaempresa {
+    font-size: 14px;
+    margin-bottom: 15px;
+    color: #cbd5e0;
+}
+
 .experience-location {
     font-size: 14px;
     margin-bottom: 15px;
     color: #cbd5e0;
 }
+
 
 /* --- LISTA DE LOGROS (UNIFICADA) --- */
 .experience-functions-list {

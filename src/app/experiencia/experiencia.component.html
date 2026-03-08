@@ -18,9 +18,11 @@
             <td class="experience experience_left">
               <div class="experience-date">{{item.Fecha}}</div>
               <div class="experience-company">{{item.Empresa}}</div>
+              <div class="experience-ubicaempresa">{{item.UbicaEmpresa}}</div>
               <div class="experience-position">{{item.Cargo}}</div>
               <div class="experience-location">{{item.Ubicacion}}</div>
               <div class="experience-functions">
+                {{item.LogrosEtiqueta}}
                 <ul class="experience-functions-list">
                   <li *ngFor="let logro of item.Logros" class="experience-functions-description">
                     {{logro.Descripcion}}
@@ -38,9 +40,11 @@
             <td class="experience">
               <div class="experience-date">{{item.Fecha}}</div>
               <div class="experience-company">{{item.Empresa}}</div>
+              <div class="experience-ubicaempresa">{{item.UbicaEmpresa}}</div>
               <div class="experience-position">{{item.Cargo}}</div>
               <div class="experience-location">{{item.Ubicacion}}</div>
               <div class="experience-functions">
+                {{item.LogrosEtiqueta}}
                 <ul class="experience-functions-list">
                   <li *ngFor="let logro of item.Logros" class="experience-functions-description">
                     {{logro.Descripcion}}
